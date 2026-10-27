@@ -1,0 +1,27 @@
+{
+  "name": "@multiversa/passport-core",
+  "version": "1.0.0",
+  "description": "Zero-dependency deterministic core for the OpenPassport v1.0 standard (Memory #240)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "passport-context",
+    "open-passport",
+    "multiversa",
+    "deterministic-ai",
+    "ai-context",
+    "sha256"
+  ],
+  "author": "Moisés David Vera (Founding AI Product Engineer) · Multiversa Group LLC",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "@types/node": "^22.13.10"
+  }
+}

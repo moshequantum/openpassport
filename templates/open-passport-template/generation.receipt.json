@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "passport-context-generation-receipt",
+  "status": "pass",
+  "generatedAt": "2026-09-30T00:05:23Z",
+  "asOf": "2026-09-29",
+  "passport": {
+    "name": "OpenPassport Canonical Template",
+    "packageVersion": "1.0.0",
+    "originator": "Tu Marca o Entidad",
+    "technicalAuthority": "Founding AI Product Engineer / Design Engineer",
+    "manifestSha256": "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92",
+    "fileCount": 10,
+    "files": [
+      {
+        "path": "manifest.json",
+        "layer": "manifest",
+        "sha256": "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92"
+      },
+      {
+        "path": "01-IDENTITY.md",
+        "layer": "identity",
+        "sha256": "8e0f98223171905ac6bdc3da4f35e4fd643d7cc328b7a4c9b1e419e07ca1fca5"
+      },
+      {
+        "path": "02-DOCTRINE.md",
+        "layer": "doctrine",
+        "sha256": "a40ac4812c44f95461407585baffaf6f8220b8213e2ef565f95df5169824218f"
+      },
+      {
+        "path": "03-VOICE.md",
+        "layer": "voice",
+        "sha256": "b1e0352c856f0b6302bf0405055bd5de8beef9b67b901bf258e2d9d41d37dbb6"
+      },
+      {
+        "path": "04-OFFER.md",
+        "layer": "offer",
+        "sha256": "ce6062c371ebd670af1f0283f9b662fc73d74c7da360b6e1fe6418b6c123016f"
+      },
+      {
+        "path": "05-GOVERNANCE.md",
+        "layer": "governance",
+        "sha256": "65ce2eda2fdd94188411591ec28b8e35aa9649908265fa77d16bf7dcf506e25c"
+      },
+      {
+        "path": "06-CURRENT-STATE.md",
+        "layer": "state",
+        "sha256": "277e0559e71f3e830cd7342b5ebba4ee8f05d87164a6ba9218c6c43e7cdc0e94"
+      },
+      {
+        "path": "07-EVIDENCE.md",
+        "layer": "evidence",
+        "sha256": "d53db863986cbb903cbaac3b90ac087e8d6535adda89c43b0c64ee18977aa8dc"
+      },
+      {
+        "path": "MASTER-PROMPT.md",
+        "layer": "interpreter",
+        "sha256": "fdbaeb77086a50dcfd3259ac62012b6d84ea8d912def06f850e30d9763c3cd42"
+      },
+      {
+        "path": "README.md",
+        "layer": "guide",
+        "sha256": "79eb2c43ebd682a78c2a27b3394ee3c20a892fd78e2b12d6bd9d411b25b0ac28"
+      }
+    ]
+  }
+}

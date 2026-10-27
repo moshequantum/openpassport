@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "PASSPORT-CONTEXT",
+  "name": "OpenPassport Canonical Template",
+  "packageVersion": "1.0.0",
+  "originator": "Tu Marca o Entidad",
+  "technicalAuthority": "Founding AI Product Engineer / Design Engineer",
+  "language": "es",
+  "asOf": "2026-09-29",
+  "updatedAt": "2026-09-29",
+  "runtimeVerifiedAt": null,
+  "ownership": "originator-owned",
+  "implicitMemory": false,
+  "authorityGrantedByPackage": false,
+  "hashAlgorithm": "sha256",
+  "hashEncoding": "lowercase-hex",
+  "hashByteContract": "UTF-8, LF line endings",
+  "manifestSelfHash": {
+    "hashMode": "raw-bytes-with-own-sha256-replaced-by-64-zeroes",
+    "path": "manifest.json",
+    "placeholder": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "loadContract": {
+    "bootstrap": [
+      "manifest.json"
+    ],
+    "firstContext": "MASTER-PROMPT.md",
+    "then": "profiles[].files in listed order",
+    "duplicatesAllowed": false
+  },
+  "temporalInvariant": {
+    "asOf": "2026-09-29"
+  },
+  "files": [
+    {
+      "path": "manifest.json",
+      "layer": "manifest",
+      "mediaType": "application/json",
+      "sha256": "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92",
+      "visibility": "public"
+    },
+    {
+      "path": "01-IDENTITY.md",
+      "layer": "identity",
+      "mediaType": "text/markdown",
+      "sha256": "8e0f98223171905ac6bdc3da4f35e4fd643d7cc328b7a4c9b1e419e07ca1fca5",
+      "visibility": "public"
+    },
+    {
+      "path": "02-DOCTRINE.md",
+      "layer": "doctrine",
+      "mediaType": "text/markdown",
+      "sha256": "a40ac4812c44f95461407585baffaf6f8220b8213e2ef565f95df5169824218f",
+      "visibility": "public"
+    },
+    {
+      "path": "03-VOICE.md",
+      "layer": "voice",
+      "mediaType": "text/markdown",
+      "sha256": "b1e0352c856f0b6302bf0405055bd5de8beef9b67b901bf258e2d9d41d37dbb6",
+      "visibility": "public"
+    },
+    {
+      "path": "04-OFFER.md",
+      "layer": "offer",
+      "mediaType": "text/markdown",
+      "sha256": "ce6062c371ebd670af1f0283f9b662fc73d74c7da360b6e1fe6418b6c123016f",
+      "visibility": "public"
+    },
+    {
+      "path": "05-GOVERNANCE.md",
+      "layer": "governance",
+      "mediaType": "text/markdown",
+      "sha256": "65ce2eda2fdd94188411591ec28b8e35aa9649908265fa77d16bf7dcf506e25c",
+      "visibility": "public"
+    },
+    {
+      "path": "06-CURRENT-STATE.md",
+      "layer": "state",
+      "mediaType": "text/markdown",
+      "sha256": "277e0559e71f3e830cd7342b5ebba4ee8f05d87164a6ba9218c6c43e7cdc0e94",
+      "visibility": "public"
+    },
+    {
+      "path": "07-EVIDENCE.md",
+      "layer": "evidence",
+      "mediaType": "text/markdown",
+      "sha256": "d53db863986cbb903cbaac3b90ac087e8d6535adda89c43b0c64ee18977aa8dc",
+      "visibility": "public"
+    },
+    {
+      "path": "MASTER-PROMPT.md",
+      "layer": "interpreter",
+      "mediaType": "text/markdown",
+      "sha256": "fdbaeb77086a50dcfd3259ac62012b6d84ea8d912def06f850e30d9763c3cd42",
+      "visibility": "public"
+    },
+    {
+      "path": "README.md",
+      "layer": "guide",
+      "mediaType": "text/markdown",
+      "sha256": "79eb2c43ebd682a78c2a27b3394ee3c20a892fd78e2b12d6bd9d411b25b0ac28",
+      "visibility": "public"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "core-public",
+      "description": "Public identity, doctrine, and voice guidelines",
+      "files": [
+        "01-IDENTITY.md",
+        "02-DOCTRINE.md",
+        "03-VOICE.md",
+        "MASTER-PROMPT.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "full",
+      "description": "Complete canonical passport package",
+      "files": [
+        "01-IDENTITY.md",
+        "02-DOCTRINE.md",
+        "03-VOICE.md",
+        "04-OFFER.md",
+        "05-GOVERNANCE.md",
+        "06-CURRENT-STATE.md",
+        "07-EVIDENCE.md",
+        "MASTER-PROMPT.md",
+        "README.md"
+      ]
+    }
+  ]
+}

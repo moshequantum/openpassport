@@ -1,0 +1,35 @@
+{
+  "name": "@multiversa/mcp-passport",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server for OpenPassport v1.0 (Claude, Cursor, Gemini, Antigravity)",
+  "type": "module",
+  "bin": {
+    "mcp-passport": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "open-passport",
+    "multiversa",
+    "claude",
+    "cursor"
+  ],
+  "author": "Moisés David Vera (Founding AI Product Engineer) · Multiversa Group LLC",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "@multiversa/passport-core": "workspace:*",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
