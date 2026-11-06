@@ -1,0 +1,51 @@
+{
+  "vectors": [
+    {
+      "id": "V1_PURE_LF",
+      "description": "Standard LF line endings with leading/trailing indentation preserved",
+      "raw": "  line 1  \nline 2\n",
+      "sha256": "6a95c71b842d2b17503e30129c0e9bb417e6c7a44e1ff604adde0cc305d4e0f7",
+      "isCanonicalLF": true
+    },
+    {
+      "id": "V2_CRLF",
+      "description": "CRLF line endings before normalization",
+      "raw": "  line 1  \r\nline 2\r\n",
+      "sha256": "96a40a10cfbc05a90698e64141a620be5f85e2d20ce3d0507d859e816f11274c",
+      "isCanonicalLF": false,
+      "normalizedSha256": "6a95c71b842d2b17503e30129c0e9bb417e6c7a44e1ff604adde0cc305d4e0f7"
+    },
+    {
+      "id": "V3_ISOLATED_CR",
+      "description": "Classic Mac OS lone CR line endings before normalization",
+      "raw": "  line 1  \rline 2\r",
+      "sha256": "f2872bea908d13aec7de538dabea9216d48dc02da274c55c0a7335c3a96e0128",
+      "isCanonicalLF": false,
+      "normalizedSha256": "6a95c71b842d2b17503e30129c0e9bb417e6c7a44e1ff604adde0cc305d4e0f7"
+    },
+    {
+      "id": "V4_UTF8_MULTIBYTE",
+      "description": "Multibyte UTF-8 non-ASCII characters including emojis and accents",
+      "raw": "Árbol de la sabiduría 🚀 — 100% determinismo\n",
+      "sha256": "3b67e72630c301474707e417530e5f0fabf440af2c10532a609b058361c87be7",
+      "isCanonicalLF": true
+    },
+    {
+      "id": "V5_EMPTY_PROFILE_SLICES",
+      "description": "Empty arrays serialized as [] rather than null",
+      "raw": "{\"files\":[],\"profiles\":[]}\n",
+      "sha256": "09629d549de8f9bf979d6c8d02eaa8f00212a3e47ea696fe02f32a7f399de853",
+      "isCanonicalLF": true
+    },
+    {
+      "id": "V6_BYTE_ORDER_SORT",
+      "description": "Strict byte lexicographical ordering (uppercase before lowercase in ASCII)",
+      "orderedKeys": [
+        "01-IDENTITY.md",
+        "README.md",
+        "manifest.json",
+        "readme.md"
+      ]
+    }
+  ]
+}

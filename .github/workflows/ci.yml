@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.1
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Go Test (Linux & macOS with Race Detection)
+        if: runner.os != 'Windows'
+        run: go test -v -race ./...
+
+      - name: Go Test (Windows)
+        if: runner.os == 'Windows'
+        run: go test -v ./...
+
+      - name: Install Node Dependencies
+        run: pnpm install
+
+      - name: Audit Node Production Dependencies
+        run: pnpm audit --prod
+
+      - name: Build TypeScript Packages
+        run: pnpm -r build
+
+      - name: Test TypeScript Packages
+        run: pnpm -r test
+
+      - name: Verify Golden Template
+        run: go run ./cmd/openpassport verify templates/open-passport-template

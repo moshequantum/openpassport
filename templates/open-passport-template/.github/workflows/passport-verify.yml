@@ -21,17 +21,63 @@ jobs:
 
       - name: Verify OpenPassport Deterministic Integrity
         run: |
-          npx --yes @multiversa/passport-core-cli verify . || node -e '
+          node -e '
           const fs = require("fs");
+          const path = require("path");
           const crypto = require("crypto");
-          const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
-          const manifestEntry = manifest.files.find(f => f.path === "manifest.json");
-          const raw = fs.readFileSync("manifest.json", "utf8");
-          const zeroed = raw.replace(manifestEntry.sha256, "0".repeat(64)).replace(/\r\n/g, "\n").trim() + "\n";
-          const selfHash = crypto.createHash("sha256").update(Buffer.from(zeroed, "utf8")).digest("hex");
-          if (manifestEntry.sha256 !== selfHash) {
-            console.error("Self-hash mismatch:", manifestEntry.sha256, "vs", selfHash);
+
+          const manifestPath = path.resolve("manifest.json");
+          if (!fs.existsSync(manifestPath)) {
+            console.error("❌ manifest.json missing");
             process.exit(1);
           }
-          console.log("✅ CI OpenPassport v1.0 Integrity Verified: 100% Deterministic PASS");
+
+          const raw = fs.readFileSync(manifestPath, "utf8");
+          const manifest = JSON.parse(raw);
+          const manifestEntry = (manifest.files || []).find(f => f.path === "manifest.json");
+          if (!manifestEntry) {
+            console.error("❌ manifest.json missing from files list");
+            process.exit(1);
+          }
+
+          const placeholder = "0".repeat(64);
+          const zeroed = raw.replace(manifestEntry.sha256, placeholder).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+          const selfHash = crypto.createHash("sha256").update(Buffer.from(zeroed, "utf8")).digest("hex");
+          if (manifestEntry.sha256 !== selfHash) {
+            console.error("❌ Self-hash mismatch: expected " + manifestEntry.sha256 + ", computed " + selfHash);
+            process.exit(1);
+          }
+
+          let errors = 0;
+          for (const f of manifest.files) {
+            if (f.path === "manifest.json") continue;
+            const fullPath = path.resolve(f.path);
+            if (!fullPath.startsWith(process.cwd())) {
+              console.error("❌ Path traversal security violation in " + f.path);
+              errors++;
+              continue;
+            }
+            if (!fs.existsSync(fullPath)) {
+              console.error("❌ Missing file on disk: " + f.path);
+              errors++;
+              continue;
+            }
+            const buf = fs.readFileSync(fullPath);
+            if (buf.includes(0x0d)) {
+              console.error("❌ CRLF detected in " + f.path + " (violates pure LF contract)");
+              errors++;
+            }
+            const hash = crypto.createHash("sha256").update(buf).digest("hex");
+            if (hash !== f.sha256) {
+              console.error("❌ Hash mismatch for " + f.path + ": expected " + f.sha256 + ", got " + hash);
+              errors++;
+            }
+          }
+
+          if (errors > 0) {
+            console.error("❌ Verification failed with " + errors + " error(s).");
+            process.exit(1);
+          }
+
+          console.log("✅ CI OpenPassport v1.0 Integrity Verified: 100% Deterministic PASS (" + manifest.files.length + " files)");
           '

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -9,12 +10,22 @@ import (
 	"github.com/moshequantum/openpassport/internal/passport"
 )
 
-const Version = "1.0.0"
+// Version is injected at build time via -ldflags "-X main.Version=..."
+var Version = "dev"
+
+var noEmoji = false
+
+func formatMsg(emoji, text string) string {
+	if noEmoji {
+		return text
+	}
+	return emoji + " " + text
+}
 
 func main() {
 	if len(os.Args) < 2 {
 		printUsage()
-		os.Exit(1)
+		os.Exit(2)
 	}
 
 	cmd := os.Args[1]
@@ -28,16 +39,16 @@ func main() {
 		handlePassport(os.Args[2:])
 
 	case "init", "lint", "build", "verify", "export":
-		// Allow direct subcommands without requiring the "passport" prefix
 		handlePassport(os.Args[1:])
 
 	case "help", "--help", "-h":
 		printUsage()
+		os.Exit(0)
 
 	default:
-		fmt.Printf("Comando desconocido: %s\n\n", cmd)
+		fmt.Fprintf(os.Stderr, "Comando desconocido: %s\n\n", cmd)
 		printUsage()
-		os.Exit(1)
+		os.Exit(2)
 	}
 }
 
@@ -52,24 +63,37 @@ Comandos disponibles:
   lint [dir]       Audita el directorio (CRLF, capas ausentes, consistencia)
   build [dir]      Compila, calcula SHA-256, sella manifestSelfHash y emite receipt
   verify [dir]     Verificación criptográfica read-only de integridad
-  export [dir]     Empaqueta un perfil de seguridad (.tar.gz) para producción
+  export [dir]     Empaqueta un perfil de seguridad (.tar.gz) determinista
   version          Muestra la versión de openpassport CLI
 
-Ejemplos:
-  openpassport init ./docs/passport-context --name "MiProyectoOS" --originator "Fundador"
-  openpassport build ./docs/passport-context --fix-crlf
-  openpassport verify ./docs/passport-context
-  openpassport export ./docs/passport-context --profile core-public --out bundle.tar.gz`)
+Códigos de salida:
+  0: Éxito / Verificación PASS
+  1: Fallo de verificación, linting o integridad
+  2: Error de sintaxis, parámetros o uso
+
+Opciones generales:
+  --no-emoji       Desactiva pictogramas y emojis en la salida estándar`)
 }
 
 func handlePassport(args []string) {
 	if len(args) < 1 {
-		fmt.Println("Error: Falta el subcomando de passport (init, lint, build, verify, export).")
-		os.Exit(1)
+		fmt.Fprintln(os.Stderr, "Error: Falta el subcomando de passport (init, lint, build, verify, export).")
+		os.Exit(2)
 	}
 
 	sub := args[0]
 	subArgs := args[1:]
+
+	// Check global --no-emoji flag
+	var filteredArgs []string
+	for _, a := range subArgs {
+		if a == "--no-emoji" {
+			noEmoji = true
+		} else {
+			filteredArgs = append(filteredArgs, a)
+		}
+	}
+	subArgs = filteredArgs
 
 	targetDir := "."
 	if len(subArgs) > 0 && !isFlag(subArgs[0]) {
@@ -79,92 +103,152 @@ func handlePassport(args []string) {
 
 	absDir, err := filepath.Abs(targetDir)
 	if err != nil {
-		fmt.Printf("Error resolviendo ruta: %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Error resolviendo ruta: %v\n", err)
+		os.Exit(2)
 	}
 
 	switch sub {
 	case "init":
-		fs := flag.NewFlagSet("init", flag.ExitOnError)
+		fs := flag.NewFlagSet("init", flag.ContinueOnError)
 		name := fs.String("name", "Nuevo Pasaporte", "Nombre canónico del pasaporte")
 		originator := fs.String("originator", "Fundador", "Nombre del originador / titular")
-		_ = fs.Parse(subArgs)
+		if err := fs.Parse(subArgs); err != nil {
+			os.Exit(2)
+		}
 
-		fmt.Printf("🚀 Inicializando OpenPassport v1.0 en: %s\n", absDir)
+		fmt.Println(formatMsg("🚀", fmt.Sprintf("Inicializando OpenPassport v1.0 en: %s", absDir)))
 		if err := passport.InitPassport(absDir, *name, *originator); err != nil {
-			fmt.Printf("❌ Error al inicializar: %v\n", err)
+			fmt.Fprintf(os.Stderr, "%s\n", formatMsg("❌", fmt.Sprintf("Error al inicializar: %v", err)))
 			os.Exit(1)
 		}
-		fmt.Println("✅ 7 Capas, .gitattributes y MASTER-PROMPT.md creados exitosamente.")
+		fmt.Println(formatMsg("✅", "7 Capas, .gitattributes y MASTER-PROMPT.md creados exitosamente."))
 
 	case "lint":
-		fmt.Printf("🔍 Auditando pasaporte en: %s\n", absDir)
+		fs := flag.NewFlagSet("lint", flag.ContinueOnError)
+		jsonOut := fs.Bool("json", false, "Salida en formato JSON estructurado")
+		if err := fs.Parse(subArgs); err != nil {
+			os.Exit(2)
+		}
+
+		if !*jsonOut {
+			fmt.Println(formatMsg("🔍", fmt.Sprintf("Auditando pasaporte en: %s", absDir)))
+		}
 		issues, err := passport.LintPassport(absDir)
 		if err != nil {
-			fmt.Printf("❌ Error durante linting: %v\n", err)
+			fmt.Fprintf(os.Stderr, "%s\n", formatMsg("❌", fmt.Sprintf("Error durante linting: %v", err)))
 			os.Exit(1)
 		}
-		if len(issues) == 0 {
-			fmt.Println("✅ [PASS] El directorio cumple estrictamente con el estándar OpenPassport v1.0.")
-		} else {
-			fmt.Printf("⚠️ Se detectaron %d problemas:\n", len(issues))
-			for _, iss := range issues {
-				fmt.Printf("  - %s\n", iss)
+
+		if *jsonOut {
+			res := map[string]interface{}{
+				"valid":  len(issues) == 0,
+				"issues": issues,
+				"dir":    absDir,
 			}
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			_ = enc.Encode(res)
+		} else {
+			if len(issues) == 0 {
+				fmt.Println(formatMsg("✅", "[PASS] El directorio cumple estrictamente con el estándar OpenPassport v1.0."))
+			} else {
+				fmt.Printf("%s\n", formatMsg("⚠️", fmt.Sprintf("Se detectaron %d problemas:", len(issues))))
+				for _, iss := range issues {
+					fmt.Printf("  - %s\n", iss)
+				}
+			}
+		}
+
+		if len(issues) > 0 {
 			os.Exit(1)
 		}
 
 	case "build":
-		fs := flag.NewFlagSet("build", flag.ExitOnError)
+		fs := flag.NewFlagSet("build", flag.ContinueOnError)
 		name := fs.String("name", "Pasaporte de Contexto", "Nombre canónico del pasaporte")
 		originator := fs.String("originator", "Originador", "Titular del contexto")
-		fixCRLF := fs.Bool("fix-crlf", true, "Normaliza automáticamente CRLF a LF en archivos de texto")
-		_ = fs.Parse(subArgs)
+		authority := fs.String("authority", "", "Autoridad técnica del contexto")
+		asOf := fs.String("as-of", "", "Fecha canónica asOf (YYYY-MM-DD)")
+		fixCRLF := fs.Bool("fix-crlf", false, "Normaliza automáticamente CRLF a LF (desactivado por defecto)")
+		if err := fs.Parse(subArgs); err != nil {
+			os.Exit(2)
+		}
 
-		fmt.Printf("⚙️ Compilando pasaporte en: %s\n", absDir)
-		m, err := passport.BuildPassport(absDir, *name, *originator, *fixCRLF)
+		fmt.Println(formatMsg("⚙️", fmt.Sprintf("Compilando pasaporte en: %s", absDir)))
+		m, err := passport.BuildPassport(absDir, passport.BuildOptions{
+			Name:               *name,
+			Originator:         *originator,
+			TechnicalAuthority: *authority,
+			AsOf:               *asOf,
+			AutoFixCRLF:        *fixCRLF,
+		})
 		if err != nil {
-			fmt.Printf("❌ Error durante la compilación: %v\n", err)
+			fmt.Fprintf(os.Stderr, "%s\n", formatMsg("❌", fmt.Sprintf("Error durante la compilación: %v", err)))
 			os.Exit(1)
 		}
-		fmt.Printf("✅ [PASS] Compilación determinista completada.\n")
-		fmt.Printf("🔒 Manifest Self-Hash: %s\n", m.Files[0].Sha256)
-		fmt.Printf("📄 Archivos procesados: %d\n", len(m.Files))
-		fmt.Println("📜 generation.receipt.json generado con éxito.")
+		fmt.Println(formatMsg("✅", "[PASS] Compilación determinista completada."))
+		fmt.Println(formatMsg("🔒", fmt.Sprintf("Manifest Self-Hash: %s", m.Files[0].Sha256)))
+		fmt.Println(formatMsg("📄", fmt.Sprintf("Archivos procesados: %d", len(m.Files))))
+		fmt.Println(formatMsg("📜", "generation.receipt.json generado con éxito."))
 
 	case "verify":
-		fmt.Printf("🔒 Verificando integridad criptográfica en: %s\n", absDir)
+		fs := flag.NewFlagSet("verify", flag.ContinueOnError)
+		jsonOut := fs.Bool("json", false, "Salida en formato JSON estructurado")
+		if err := fs.Parse(subArgs); err != nil {
+			os.Exit(2)
+		}
+
+		if !*jsonOut {
+			fmt.Println(formatMsg("🔒", fmt.Sprintf("Verificando integridad criptográfica en: %s", absDir)))
+		}
 		ok, errs, err := passport.VerifyPassport(absDir)
 		if err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
+			fmt.Fprintf(os.Stderr, "%s\n", formatMsg("❌", fmt.Sprintf("Error: %v", err)))
 			os.Exit(1)
 		}
-		if ok {
-			fmt.Println("🎉 [100% PASS] Todos los archivos verificados con hashes SHA-256 e integridad LF determinista.")
-		} else {
-			fmt.Println("💥 Falló la verificación de integridad:")
-			for _, e := range errs {
-				fmt.Printf("  - %s\n", e)
+
+		if *jsonOut {
+			res := map[string]interface{}{
+				"valid":  ok,
+				"errors": errs,
+				"dir":    absDir,
 			}
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			_ = enc.Encode(res)
+		} else {
+			if ok {
+				fmt.Println(formatMsg("🎉", "[100% PASS] Todos los archivos verificados con hashes SHA-256 e integridad LF determinista."))
+			} else {
+				fmt.Println(formatMsg("💥", "Falló la verificación de integridad:"))
+				for _, e := range errs {
+					fmt.Printf("  - %s\n", e)
+				}
+			}
+		}
+
+		if !ok {
 			os.Exit(1)
 		}
 
 	case "export":
-		fs := flag.NewFlagSet("export", flag.ExitOnError)
+		fs := flag.NewFlagSet("export", flag.ContinueOnError)
 		profile := fs.String("profile", "core-public", "ID del perfil a exportar (core-public, full)")
 		out := fs.String("out", "passport-bundle.tar.gz", "Archivo de salida")
-		_ = fs.Parse(subArgs)
+		if err := fs.Parse(subArgs); err != nil {
+			os.Exit(2)
+		}
 
-		fmt.Printf("📦 Exportando perfil '%s' hacia '%s'...\n", *profile, *out)
+		fmt.Println(formatMsg("📦", fmt.Sprintf("Exportando perfil '%s' hacia '%s'...", *profile, *out)))
 		if err := passport.ExportProfile(absDir, *profile, *out); err != nil {
-			fmt.Printf("❌ Error exportando: %v\n", err)
+			fmt.Fprintf(os.Stderr, "%s\n", formatMsg("❌", fmt.Sprintf("Error exportando: %v", err)))
 			os.Exit(1)
 		}
-		fmt.Printf("✅ Paquete generado exitosamente en %s\n", *out)
+		fmt.Println(formatMsg("✅", fmt.Sprintf("Paquete generado exitosamente en %s", *out)))
 
 	default:
-		fmt.Printf("Subcomando no reconocido: %s\n", sub)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Subcomando no reconocido: %s\n", sub)
+		os.Exit(2)
 	}
 }
 

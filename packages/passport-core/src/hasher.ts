@@ -32,7 +32,7 @@ export function computeManifestSelfHash(
     manifestEntry.sha256 = placeholder;
   }
 
-  const jsonStringWithZeroes = toLF(JSON.stringify(clone, null, 2));
+  const jsonStringWithZeroes = toLF(JSON.stringify(clone, null, 2)) + "\n";
   const selfHash = sha256(Buffer.from(jsonStringWithZeroes, "utf8"));
 
   return {
