@@ -5,7 +5,7 @@
 **The Deterministic Context & Cryptographic Integrity Engine for AI Agents**
 
 [![Release](https://img.shields.io/github/v/release/moshequantum/openpassport?color=00E5FF&label=Release&style=flat-square)](https://github.com/moshequantum/openpassport/releases)
-[![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.22-7C4DFF?style=flat-square&logo=go)](https://go.dev)
+[![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.27.1-7C4DFF?style=flat-square&logo=go)](https://go.dev)
 [![License](https://img.shields.io/badge/License-Apache--2.0-00E676?style=flat-square)](LICENSE)
 [![Verification](https://img.shields.io/badge/Integrity-SHA--256%20Deterministic-FFD600?style=flat-square)](#cryptographic-integrity-seal)
 [![MCP](https://img.shields.io/badge/MCP-Native%20Server-white?style=flat-square&logo=anthropic)](#model-context-protocol-mcp)
@@ -14,7 +14,7 @@
   Stop context drift and LLM hallucinations. OpenPassport compiles raw business discovery into an immutable, cryptographically sealed 7-layer semantic context package.
 </p>
 
-[Quickstart](#quickstart) • [The 7 Semantic Layers](#the-7-canonical-layers) • [Precedence Hierarchy](#mathematical-precedence-hierarchy) • [CLI Commands](#cli-reference) • [MCP Server](#model-context-protocol-mcp)
+[Quickstart](#quickstart) • [The 7 Semantic Layers](#the-7-canonical-layers) • [Precedence Hierarchy](#mathematical-precedence-hierarchy) • [CLI Commands](#cli-reference) • [MCP Server](#model-context-protocol-mcp) • [Security](#security)
 
 </div>
 
@@ -75,9 +75,9 @@ If an agent is prompted to "recommend a free consultation" but `04-OFFER.md` spe
 ## 🔒 Cryptographic Integrity Seal
 
 OpenPassport guarantees deterministic reproducibility across all operating systems:
-1. **LF Normalization:** Line endings are normalized to LF (`\n`) via `.gitattributes` and internal hasher logic (`CRLF` $\to$ `LF`) before computing hashes.
-2. **Per-File Hashes:** Every layer receives a standalone SHA-256 checksum in `manifest.json`.
-3. **Self-Sealing Manifest:** To verify the manifest itself without circular dependency, the `sha256` field is set to 64 zeros (`0000000000000000000000000000000000000000000000000000000000000000`), formatted as indented JSON, and then hashed to produce the final cryptographic seal.
+1. **Pure LF Line Endings:** Text files (`.md`, `.json`, `.txt`) require strictly Unix LF (`\n`). Verification rejects CRLF (`0x0D 0x0A`) immediately in strict mode.
+2. **Deterministic Hashes:** Every layer receives a raw-byte SHA-256 checksum in `manifest.json`.
+3. **Self-Sealing Manifest:** To verify the manifest itself without circular dependency, the `manifest.json` entry sha256 placeholder is set to 64 zeros (`0000000000000000000000000000000000000000000000000000000000000000`), formatted with 2 spaces indent, and hashed to produce the final cryptographic seal.
 
 ---
 
@@ -103,7 +103,7 @@ openpassport lint ./docs/passport-context
 
 ### 4. Build & Seal with SHA-256
 ```bash
-openpassport build ./docs/passport-context --fix-crlf
+openpassport build ./docs/passport-context --as-of 2026-11-05
 ```
 
 ### 5. Verify Integrity
@@ -121,14 +121,19 @@ Output:
 
 ## 💻 CLI Reference
 
-| Command | Arguments | Description |
+| Command | Arguments & Flags | Description |
 |---|---|---|
-| `init` | `[dir] [--name] [--originator]` | Scaffolds the 7 layers, `.gitattributes`, and `MASTER-PROMPT.md`. |
-| `lint` | `[dir]` | Audits formatting, CRLF presence, and layer completeness. |
-| `build` | `[dir] [--fix-crlf]` | Normalizes content, computes SHA-256 hashes, and seals `manifest.json`. |
-| `verify` | `[dir]` | Read-only verification of cryptographic checksums. |
-| `export` | `[dir] [--profile] [--out]` | Packages an authenticated profile bundle (`.tar.gz`) for deployment. |
+| `init` | `[dir] [--name <str>] [--originator <str>]` | Scaffolds the 7 layers, `.gitattributes`, and `MASTER-PROMPT.md`. |
+| `lint` | `[dir] [--json]` | Audits formatting, CRLF presence, and layer completeness. |
+| `build` | `[dir] [--as-of YYYY-MM-DD] [--fix-crlf]` | Normalizes content, computes SHA-256 hashes, and deterministically seals `manifest.json`. |
+| `verify` | `[dir] [--json]` | Read-only verification of cryptographic checksums and LF contract. |
+| `export` | `[dir] [--profile <id>] [--out <file.tar.gz>]` | Verifies integrity and packages an authenticated deterministic profile bundle. |
 | `version` | — | Displays the current CLI version and standard specification. |
+
+### Exit Codes:
+* `0`: Success / Verification PASS.
+* `1`: Verification, linting, or integrity failure.
+* `2`: Syntax, argument, or usage error.
 
 ---
 
@@ -148,13 +153,22 @@ OpenPassport ships with an official MCP server located in `packages/mcp-passport
 ```
 
 ### Exposed Capabilities:
-* **Resources:** `passport://identity`, `passport://doctrine`, `passport://voice`, `passport://offer`, `passport://governance`, `passport://current-state`, `passport://evidence`.
-* **Tools:** `verify_passport_integrity`, `get_layer_content`, `check_claim_evidence`.
+* **Resources:** `passport://identity`, `passport://doctrine`, `passport://voice`, `passport://offer`, `passport://governance`, `passport://current-state`, `passport://evidence`, `passport://manifest`, `passport://master-prompt`.
+* **Tools:** `get_layer_content`, `check_claim_evidence`, `resolve_context` (Fail-Closed), `verify_passport_integrity`, `get_passport_manifest`.
+
+---
+
+## 🛡️ Security
+
+OpenPassport treats context security as a critical boundary:
+* Path traversal attempts (`..`, absolute paths) are rejected at the parser level via canonical `SafeJoin`.
+* MCP resolution operates in **fail-closed** mode: missing profiles or invalid manifests halt immediately without exposing private context.
+* For vulnerability reporting, see [SECURITY.md](SECURITY.md).
 
 ---
 
 ## 📄 License
 
-OpenPassport is open-source software licensed under the **Apache-2.0 License**.
+OpenPassport is open-source software licensed under the **[Apache-2.0 License](LICENSE)**.
 
 Designed and maintained by **[Multiversa Group LLC](https://multiversa.group)**.

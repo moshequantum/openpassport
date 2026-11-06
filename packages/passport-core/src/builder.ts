@@ -43,13 +43,19 @@ function getAllFiles(dir: string, baseDir: string = dir): string[] {
   let results: string[] = [];
   const list = fs.readdirSync(dir);
   for (const item of list) {
-    if (item === ".git" || item === "generation.receipt.json") continue;
+    if (item === ".git" || item === "node_modules" || item === "generation.receipt.json") continue;
+    if (item.endsWith(".tar.gz")) continue;
+
     const full = path.join(dir, item);
-    const stat = fs.statSync(full);
-    if (stat.isDirectory()) {
+    const lstat = fs.lstatSync(full);
+    if (lstat.isSymbolicLink()) continue;
+
+    if (lstat.isDirectory()) {
       results = results.concat(getAllFiles(full, baseDir));
     } else {
-      results.push(path.relative(baseDir, full).replace(/\\/g, "/"));
+      const rel = path.relative(baseDir, full).replace(/\\/g, "/");
+      if (rel.startsWith(".git") && rel !== ".gitattributes") continue;
+      results.push(rel);
     }
   }
   return results;
@@ -62,7 +68,21 @@ export function buildPassport(
   baseDir: string,
   options: BuildPassportOptions
 ): { manifest: PassportManifest; receipt: PassportReceipt; manifestSelfHash: string } {
-  const asOf = options.asOf || new Date().toISOString().split("T")[0];
+  let asOf = options.asOf;
+  const manifestPath = path.join(baseDir, "manifest.json");
+
+  if (!asOf && fs.existsSync(manifestPath)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+      if (existing.asOf) asOf = existing.asOf;
+    } catch {
+      // fallback
+    }
+  }
+  if (!asOf) {
+    asOf = new Date().toISOString().split("T")[0];
+  }
+
   const gitattributesPath = path.join(baseDir, ".gitattributes");
   if (!fs.existsSync(gitattributesPath)) {
     fs.writeFileSync(gitattributesPath, toLF(CANONICAL_GITATTRIBUTES), "utf8");
@@ -104,6 +124,9 @@ export function buildPassport(
     });
   }
 
+  // Raw byte order sorting
+  fileEntries.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+
   // 3. Construct Manifest
   const manifest: PassportManifest = {
     schemaVersion: 1,
@@ -142,7 +165,7 @@ export function buildPassport(
         sha256: DEFAULT_SELF_HASH_PLACEHOLDER,
         visibility: "public",
       },
-      ...fileEntries.sort((a, b) => a.path.localeCompare(b.path)),
+      ...fileEntries,
     ],
     profiles: [
       {
@@ -167,8 +190,7 @@ export function buildPassport(
     manifestEntry.sha256 = selfHash;
   }
 
-  const manifestPath = path.join(baseDir, "manifest.json");
-  fs.writeFileSync(manifestPath, toLF(JSON.stringify(manifest, null, 2)), "utf8");
+  fs.writeFileSync(manifestPath, toLF(JSON.stringify(manifest, null, 2)) + "\n", "utf8");
 
   // 5. Generate generation.receipt.json
   const receipt: PassportReceipt = {
@@ -193,7 +215,7 @@ export function buildPassport(
   };
 
   const receiptPath = path.join(baseDir, "generation.receipt.json");
-  fs.writeFileSync(receiptPath, toLF(JSON.stringify(receipt, null, 2)), "utf8");
+  fs.writeFileSync(receiptPath, toLF(JSON.stringify(receipt, null, 2)) + "\n", "utf8");
 
   return {
     manifest,

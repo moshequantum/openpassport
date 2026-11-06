@@ -1,0 +1,16 @@
+{
+  "name": "openpassport-monorepo",
+  "private": true,
+  "license": "Apache-2.0",
+  "pnpm": {
+    "overrides": {
+      "zod": "4.6.7"
+    }
+  },
+  "resolutions": {
+    "zod": "4.6.7"
+  },
+  "overrides": {
+    "zod": "4.6.7"
+  }
+}

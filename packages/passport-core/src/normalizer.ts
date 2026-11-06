@@ -1,8 +1,8 @@
 /**
- * Normalizes string line endings to canonical Unix LF (\n) with a trailing newline.
+ * Normalizes string line endings to canonical Unix LF (\n) without trimming whitespace.
  */
 export function toLF(str: string): string {
-  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim() + "\n";
+  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
 
 /**
@@ -19,7 +19,6 @@ export function hasCRLF(content: Buffer | string): boolean {
  * Heuristic to detect if a file is binary (e.g. PNG, PDF, ZIP) vs text.
  */
 export function isBinaryBuffer(buf: Buffer): boolean {
-  // Check for common binary magic bytes or null bytes in the first 8000 bytes
   const limit = Math.min(buf.length, 8000);
   for (let i = 0; i < limit; i++) {
     if (buf[i] === 0x00) {

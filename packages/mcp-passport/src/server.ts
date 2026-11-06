@@ -72,9 +72,15 @@ export function createPassportMcpServer(config: McpServerConfig) {
           mimeType: "text/markdown",
         },
         {
-          uri: "passport://state",
+          uri: "passport://current-state",
           name: "06-CURRENT-STATE.md",
           description: "Invariante temporal con fecha de corte estricta (asOf)",
+          mimeType: "text/markdown",
+        },
+        {
+          uri: "passport://state",
+          name: "06-CURRENT-STATE.md",
+          description: "Invariante temporal (alias)",
           mimeType: "text/markdown",
         },
         {
@@ -108,6 +114,7 @@ export function createPassportMcpServer(config: McpServerConfig) {
       "passport://voice": "03-VOICE.md",
       "passport://offer": "04-OFFER.md",
       "passport://governance": "05-GOVERNANCE.md",
+      "passport://current-state": "06-CURRENT-STATE.md",
       "passport://state": "06-CURRENT-STATE.md",
       "passport://evidence": "07-EVIDENCE.md",
       "passport://manifest": "manifest.json",
@@ -162,8 +169,36 @@ export function createPassportMcpServer(config: McpServerConfig) {
           },
         },
         {
+          name: "get_layer_content",
+          description: "Alias de get_passport_layer: Recupera el contenido textual de una capa canónica.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              layer: {
+                type: "string",
+                description: "Nombre de capa: identity, doctrine, voice, offer, governance, state, evidence, master-prompt",
+              },
+            },
+            required: ["layer"],
+          },
+        },
+        {
+          name: "check_claim_evidence",
+          description: "Contrasta una afirmación o hecho contra las evidencias epistémicas de la capa 07-EVIDENCE.md.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              claim: {
+                type: "string",
+                description: "Afirmación a verificar con evidencia epistémica.",
+              },
+            },
+            required: ["claim"],
+          },
+        },
+        {
           name: "resolve_context",
-          description: "Resuelve y consolida el contexto bajo la estricta jerarquía de precedencia matemática.",
+          description: "Resuelve y consolida el contexto bajo la estricta jerarquía de precedencia matemática (Fail-Closed).",
           inputSchema: {
             type: "object",
             properties: {
@@ -200,6 +235,7 @@ export function createPassportMcpServer(config: McpServerConfig) {
         return { content: [{ type: "text", text: content }] };
       }
 
+      case "get_layer_content":
       case "get_passport_layer": {
         const layerKey = String((args as Record<string, unknown>)?.layer || "").toLowerCase();
         const map: Record<string, string> = {
@@ -209,6 +245,7 @@ export function createPassportMcpServer(config: McpServerConfig) {
           offer: "04-OFFER.md",
           governance: "05-GOVERNANCE.md",
           state: "06-CURRENT-STATE.md",
+          "current-state": "06-CURRENT-STATE.md",
           evidence: "07-EVIDENCE.md",
           "master-prompt": "MASTER-PROMPT.md",
         };
@@ -223,26 +260,66 @@ export function createPassportMcpServer(config: McpServerConfig) {
         return { content: [{ type: "text", text }] };
       }
 
+      case "check_claim_evidence": {
+        const claim = String((args as Record<string, unknown>)?.claim || "").trim();
+        const evidenceContent = readLayerFile("07-EVIDENCE.md");
+        if (!evidenceContent) {
+          return { content: [{ type: "text", text: "Error: 07-EVIDENCE.md no encontrado en el pasaporte." }], isError: true };
+        }
+        return {
+          content: [
+            {
+              type: "text",
+              text: `# AUDITORÍA DE EVIDENCIA EPISTÉMICA\n\n**Afirmación a Contrastar:**\n> "${claim}"\n\n**Evidencia Canónica (07-EVIDENCE.md):**\n\n${evidenceContent}`,
+            },
+          ],
+        };
+      }
+
       case "resolve_context": {
+        // FAIL-CLOSED: Validates manifest and profile presence strictly
         const profileId = String((args as Record<string, unknown>)?.profile || "core-public").toLowerCase();
         const manifestRaw = readLayerFile("manifest.json");
-        let allowedFiles: Set<string> | null = null;
+        if (!manifestRaw) {
+          return {
+            content: [{ type: "text", text: "Error de seguridad (Fail-Closed): manifest.json no encontrado." }],
+            isError: true,
+          };
+        }
 
-        if (manifestRaw) {
-          try {
-            const parsedManifest: PassportManifest = JSON.parse(manifestRaw);
-            const targetProfile = parsedManifest.profiles?.find((p) => p.id === profileId);
-            if (targetProfile) {
-              const isPublicProfile = profileId.includes("public");
-              const permitted = parsedManifest.files
-                .filter((f) => targetProfile.files.includes(f.path) && (!isPublicProfile || f.visibility === "public"))
-                .map((f) => f.path);
-              allowedFiles = new Set(permitted);
-              if (targetProfile.files.includes("MASTER-PROMPT.md")) allowedFiles.add("MASTER-PROMPT.md");
+        let parsedManifest: PassportManifest;
+        try {
+          parsedManifest = JSON.parse(manifestRaw);
+        } catch (err) {
+          return {
+            content: [{ type: "text", text: `Error de seguridad (Fail-Closed): manifest.json corrupto o inválido: ${String(err)}` }],
+            isError: true,
+          };
+        }
+
+        const targetProfile = parsedManifest.profiles?.find((p) => p.id.toLowerCase() === profileId);
+        if (!targetProfile) {
+          return {
+            content: [{ type: "text", text: `Error de seguridad (Fail-Closed): perfil '${profileId}' no existe en manifest.json.` }],
+            isError: true,
+          };
+        }
+
+        const isPublicProfile = profileId.includes("public");
+        const allowedFiles = new Set<string>();
+
+        for (const fileEntry of parsedManifest.files || []) {
+          if (targetProfile.files.includes(fileEntry.path)) {
+            // Strict visibility invariant: public profiles NEVER receive non-public files
+            if (isPublicProfile && fileEntry.visibility !== "public") {
+              continue;
             }
-          } catch {
-            // fallback if manifest parsing fails
+            allowedFiles.add(fileEntry.path);
           }
+        }
+
+        if (targetProfile.files.includes("MASTER-PROMPT.md")) {
+          allowedFiles.add("MASTER-PROMPT.md");
         }
 
         const precedenceOrder = [
@@ -261,7 +338,7 @@ export function createPassportMcpServer(config: McpServerConfig) {
         consolidated += `> Fórmula de Precedencia: Titular > Gobernanza (05) > Identidad/Doctrina (01,02) > Oferta (04) > Voz (03) > Evidencia (07) > Estado (06)\n\n---\n\n`;
 
         for (const l of precedenceOrder) {
-          if (allowedFiles && !allowedFiles.has(l)) {
+          if (!allowedFiles.has(l)) {
             continue;
           }
           const content = readLayerFile(l);

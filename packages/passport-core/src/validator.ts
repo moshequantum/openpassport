@@ -14,6 +14,42 @@ export const CANONICAL_LAYERS = [
   "07-EVIDENCE.md",
 ];
 
+/**
+ * Resolves an untrusted relative path against baseDir, preventing path traversal outside baseDir.
+ * Throws an Error if path escapes baseDir or is absolute.
+ */
+export function safeJoin(baseDir: string, untrustedPath: string): string {
+  if (path.isAbsolute(untrustedPath) || untrustedPath.startsWith("/") || untrustedPath.startsWith("\\")) {
+    throw new Error(`Absolute paths are not permitted in passport entries: ${untrustedPath}`);
+  }
+
+  const cleanRel = path.normalize(untrustedPath);
+  if (cleanRel === ".." || cleanRel.startsWith(".." + path.sep) || cleanRel.startsWith("../")) {
+    throw new Error(`Path traversal detected: ${untrustedPath}`);
+  }
+
+  const absBase = path.resolve(baseDir);
+  const target = path.resolve(absBase, cleanRel);
+  const relToBase = path.relative(absBase, target);
+
+  if (relToBase === ".." || relToBase.startsWith(".." + path.sep) || relToBase.startsWith("../")) {
+    throw new Error(`Path traversal detected: ${untrustedPath}`);
+  }
+
+  if (fs.existsSync(target)) {
+    const lstat = fs.lstatSync(target);
+    if (lstat.isSymbolicLink()) {
+      const real = fs.realpathSync(target);
+      const realRel = path.relative(absBase, real);
+      if (realRel === ".." || realRel.startsWith(".." + path.sep) || realRel.startsWith("../")) {
+        throw new Error(`Symlink traversal detected: ${untrustedPath} points outside base directory`);
+      }
+    }
+  }
+
+  return target;
+}
+
 export function validateSevenLayers(baseDir: string): { missing: string[]; present: string[] } {
   const missing: string[] = [];
   const present: string[] = [];
@@ -97,7 +133,21 @@ export function verifyPassportIntegrity(baseDir: string): IntegrityReport {
       continue;
     }
 
-    const filePath = path.join(baseDir, entry.path);
+    let filePath: string;
+    try {
+      filePath = safeJoin(baseDir, entry.path);
+    } catch (err) {
+      errors.push(`Security violation in path ${entry.path}: ${String(err)}`);
+      fileChecks.push({
+        path: entry.path,
+        expectedHash: entry.sha256,
+        computedHash: "SECURITY_VIOLATION",
+        matches: false,
+        hasCRLF: false,
+      });
+      continue;
+    }
+
     if (!fs.existsSync(filePath)) {
       errors.push(`File missing on disk: ${entry.path}`);
       fileChecks.push({
@@ -118,16 +168,16 @@ export function verifyPassportIntegrity(baseDir: string): IntegrityReport {
       errors.push(`CRLF detected in ${entry.path}! Must be normalized to pure LF.`);
     }
 
-    const hash = sha256(buf);
-    const matches = hash === entry.sha256;
+    const computedHash = sha256(buf);
+    const matches = computedHash === entry.sha256;
     if (!matches) {
-      errors.push(`Hash mismatch for ${entry.path}: expected ${entry.sha256}, got ${hash}`);
+      errors.push(`Hash mismatch for ${entry.path}: expected ${entry.sha256}, computed ${computedHash}`);
     }
 
     fileChecks.push({
       path: entry.path,
       expectedHash: entry.sha256,
-      computedHash: hash,
+      computedHash,
       matches,
       hasCRLF: fileHasCRLF,
     });

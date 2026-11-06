@@ -12,15 +12,16 @@ import {
   buildPassport,
   verifyPassportIntegrity,
   validateSevenLayers,
+  safeJoin,
 } from "../dist/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe("@multiversa/passport-core", () => {
-  it("normalizes CRLF to LF correctly", () => {
-    const dirty = "hello\r\nworld\r\n";
+  it("normalizes CRLF to LF correctly without trimming whitespace (H2)", () => {
+    const dirty = "   leading spaces and trailing   \r\n\r\n";
     const clean = toLF(dirty);
-    assert.strictEqual(clean, "hello\nworld\n");
+    assert.strictEqual(clean, "   leading spaces and trailing   \n\n");
     assert.strictEqual(hasCRLF(clean), false);
     assert.strictEqual(hasCRLF(dirty), true);
   });
@@ -42,6 +43,30 @@ describe("@multiversa/passport-core", () => {
     assert.strictEqual(audit.valid, true);
     assert.strictEqual(audit.selfHashMatches, true);
     assert.strictEqual(audit.computedSelfHash, "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92");
+  });
+
+  it("safeJoin rejects path traversal attacks (B1 TS)", () => {
+    assert.throws(() => safeJoin("/base", "../secret.txt"), /Path traversal/);
+    assert.throws(() => safeJoin("/base", "/etc/passwd"), /Absolute paths/);
+  });
+
+  it("passes all golden vectors from testdata/vectors/manifest.json", () => {
+    const vectorsPath = path.resolve(__dirname, "../../../testdata/vectors/manifest.json");
+    const { vectors } = JSON.parse(fs.readFileSync(vectorsPath, "utf8"));
+    for (const v of vectors) {
+      if (v.raw) {
+        const h = sha256(v.raw);
+        assert.strictEqual(h, v.sha256, `Failed sha256 for vector ${v.id}`);
+        if (v.isCanonicalLF) {
+          assert.strictEqual(hasCRLF(v.raw), false, `Vector ${v.id} should have hasCRLF=false`);
+        }
+        if (v.normalizedSha256) {
+          const norm = toLF(v.raw);
+          const nh = sha256(norm);
+          assert.strictEqual(nh, v.normalizedSha256, `Failed normalized sha256 for vector ${v.id}`);
+        }
+      }
+    }
   });
 
   it("builds and verifies a canonical passport", () => {
