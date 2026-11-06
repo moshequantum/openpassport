@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/openpassport-banner.svg" alt="OpenPassport Banner" width="100%">
+
 # 🌐 OpenPassport
 
 **The Deterministic Context & Cryptographic Integrity Engine for AI Agents**
