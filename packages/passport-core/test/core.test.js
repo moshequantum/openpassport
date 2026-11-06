@@ -3,6 +3,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { fileURLToPath } from "node:url";
 import {
   toLF,
   hasCRLF,
@@ -12,6 +13,8 @@ import {
   verifyPassportIntegrity,
   validateSevenLayers,
 } from "../dist/index.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe("@multiversa/passport-core", () => {
   it("normalizes CRLF to LF correctly", () => {
@@ -26,6 +29,19 @@ describe("@multiversa/passport-core", () => {
     const hash = sha256("test-content\n");
     assert.strictEqual(typeof hash, "string");
     assert.strictEqual(hash.length, 64);
+  });
+
+  it("cross-verifies canonical template golden hash matching Go verifier", () => {
+    const templateDir = path.resolve(__dirname, "../../../templates/open-passport-template");
+    const manifestPath = path.join(templateDir, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const { selfHash } = computeManifestSelfHash(manifest);
+    assert.strictEqual(selfHash, "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92");
+
+    const audit = verifyPassportIntegrity(templateDir);
+    assert.strictEqual(audit.valid, true);
+    assert.strictEqual(audit.selfHashMatches, true);
+    assert.strictEqual(audit.computedSelfHash, "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92");
   });
 
   it("builds and verifies a canonical passport", () => {
