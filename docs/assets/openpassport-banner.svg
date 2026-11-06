@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient (Obsidian to Deep Burgundy) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050204" />
+      <stop offset="45%" stop-color="#0f050b" />
+      <stop offset="75%" stop-color="#14060e" />
+      <stop offset="100%" stop-color="#040102" />
+    </linearGradient>
+
+    <!-- Burgundy Ambient Glow -->
+    <radialGradient id="burgundyGlow" cx="50%" cy="38%" r="55%">
+      <stop offset="0%" stop-color="#800020" stop-opacity="0.38" />
+      <stop offset="45%" stop-color="#4a0013" stop-opacity="0.14" />
+      <stop offset="100%" stop-color="#050204" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Cyan Cryptographic Precision Glow -->
+    <radialGradient id="cyanSealGlow" cx="50%" cy="42%" r="35%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.22" />
+      <stop offset="60%" stop-color="#007a87" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#050204" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Metallic Gold Edge Gradient -->
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#800020" stop-opacity="0.2" />
+      <stop offset="25%" stop-color="#800020" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#d4af37" stop-opacity="0.9" />
+      <stop offset="75%" stop-color="#800020" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#800020" stop-opacity="0.2" />
+    </linearGradient>
+
+    <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0" />
+      <stop offset="50%" stop-color="#00e5ff" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="glowDrop" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.8" />
+    </filter>
+    <filter id="sealShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#00e5ff" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background Layer -->
+  <rect width="1200" height="460" fill="url(#bgGradient)" />
+  <rect width="1200" height="460" fill="url(#burgundyGlow)" />
+  <rect width="1200" height="460" fill="url(#cyanSealGlow)" />
+
+  <!-- Subtle Architectural Precision Grid -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <line x1="120" y1="0" x2="120" y2="460" />
+    <line x1="360" y1="0" x2="360" y2="460" />
+    <line x1="840" y1="0" x2="840" y2="460" />
+    <line x1="1080" y1="0" x2="1080" y2="460" />
+    <line x1="0" y1="80" x2="1200" y2="80" />
+    <line x1="0" y1="380" x2="1200" y2="380" />
+    <circle cx="600" cy="180" r="160" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="4,8" />
+    <circle cx="600" cy="180" r="120" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,6" />
+  </g>
+
+  <!-- Top / Bottom Frame Accents -->
+  <line x1="60" y1="24" x2="1140" y2="24" stroke="url(#goldAccent)" stroke-width="1.2" />
+  <line x1="60" y1="436" x2="1140" y2="436" stroke="url(#goldAccent)" stroke-width="1.2" />
+
+  <!-- Corner Brackets (Multiversa Industrial Engineering Touch) -->
+  <g stroke="#800020" stroke-width="1.5" fill="none" opacity="0.7">
+    <path d="M40,44 L40,24 L60,24" />
+    <path d="M1160,44 L1160,24 L1140,24" />
+    <path d="M40,416 L40,436 L60,436" />
+    <path d="M1160,416 L1160,436 L1140,436" />
+  </g>
+
+  <!-- Center Diamond Marks -->
+  <polygon points="600,18 605,24 600,30 595,24" fill="#d4af37" />
+  <polygon points="600,430 605,436 600,442 595,436" fill="#d4af37" />
+
+  <!-- ================= LOGO / CRYPTOGRAPHIC SEAL ================= -->
+  <g transform="translate(600, 150)" filter="url(#glowDrop)" text-anchor="middle">
+    <!-- Outer Shield / Vault Geometry -->
+    <path d="M-64,-64 L64,-64 L80,-10 L0,74 L-80,-10 Z" 
+          fill="#0c0409" 
+          stroke="#800020" 
+          stroke-width="2" 
+          opacity="0.95" />
+
+    <!-- Inner Seal with Cyan Accent -->
+    <path d="M-52,-52 L52,-52 L66,-8 L0,58 L-66,-8 Z" 
+          fill="none" 
+          stroke="#00e5ff" 
+          stroke-width="1.5" 
+          stroke-opacity="0.7" 
+          filter="url(#sealShadow)" />
+
+    <!-- Authentic Multiversa Isotype Pillars (Scaled down to fit inside the seal) -->
+    <g transform="translate(-36, -34) scale(0.48)">
+      <path d="M61.1 100.67H36.37L45.66 33.68H70.45L61.1 100.67Z" fill="#d4af37" />
+      <path d="M92.08 100.67H67.29L76.6 33.68H101.37L92.08 100.67Z" fill="#00e5ff" />
+      <path d="M123 100.67H98.22L107.51 33.68H113.48C123.42 33.68 131.07 42.46 129.7 52.31L123 100.67Z" fill="#ffffff" />
+      <path d="M153.32 134.33H38.5C27.36 134.33 16.78 129.51 9.46 121.12C2.14 112.72 -1.16 101.59 0.37 90.55L8.32 33.2C10.94 14.27 27.34 0 46.45 0H127.73C138.87 0 149.45 4.82 156.77 13.22C164.09 21.61 167.39 32.76 165.86 43.8L153.3 134.35H153.32ZM46.45 11.47C33.03 11.47 21.52 21.5 19.67 34.79L11.72 92.14C10.64 99.88 12.97 107.71 18.1 113.6C23.24 119.5 30.67 122.88 38.48 122.88H143.3L154.5 42.21C155.57 34.47 153.25 26.64 148.11 20.75C142.97 14.85 135.54 11.47 127.73 11.47H46.45Z" fill="#ffffff" opacity="0.8" />
+    </g>
+
+    <!-- 7 Canonical Layer Orbital Dots (01 Identity ... 07 Evidence) -->
+    <!-- Dot 1: Top Left -->
+    <circle cx="-100" cy="-60" r="3.5" fill="#d4af37" />
+    <text x="-100" y="-70" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">01·ID</text>
+
+    <!-- Dot 2: Top -->
+    <circle cx="-50" cy="-105" r="3.5" fill="#d4af37" />
+    <text x="-50" y="-115" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">02·DOC</text>
+
+    <!-- Dot 3: Top Right -->
+    <circle cx="50" cy="-105" r="3.5" fill="#d4af37" />
+    <text x="50" y="-115" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">03·VOI</text>
+
+    <!-- Dot 4: Far Right -->
+    <circle cx="100" cy="-60" r="3.5" fill="#d4af37" />
+    <text x="100" y="-70" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">04·OFF</text>
+
+    <!-- Dot 5: Mid Right -->
+    <circle cx="115" cy="20" r="3.5" fill="#00e5ff" />
+    <text x="145" y="24" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#00e5ff" letter-spacing="1">05·GOV</text>
+
+    <!-- Dot 6: Bottom Right -->
+    <circle cx="70" cy="85" r="3.5" fill="#00e5ff" />
+    <text x="70" y="102" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">06·STATE</text>
+
+    <!-- Dot 7: Bottom Left -->
+    <circle cx="-70" cy="85" r="3.5" fill="#00e5ff" />
+    <text x="-70" y="102" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">07·EVID</text>
+  </g>
+
+  <!-- Subtle Cyan Glow Bar -->
+  <line x1="300" y1="264" x2="900" y2="264" stroke="url(#cyanLine)" stroke-width="1.5" />
+
+  <!-- ================= TYPOGRAPHY ================= -->
+  <!-- Main Title: OPENPASSPORT -->
+  <text x="600" y="312" 
+        text-anchor="middle" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif" 
+        font-size="44" 
+        font-weight="800" 
+        letter-spacing="12" 
+        fill="#ffffff">
+    OPENPASSPORT
+  </text>
+
+  <!-- Tagline / Descriptor -->
+  <text x="600" y="344" 
+        text-anchor="middle" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif" 
+        font-size="12.5" 
+        font-weight="600" 
+        letter-spacing="5" 
+        fill="#d4af37">
+    DETERMINISTIC CONTEXT &amp; CRYPTOGRAPHIC INTEGRITY ENGINE
+  </text>
+
+  <!-- Technical Spec & Authority Badge Row -->
+  <g transform="translate(600, 392)" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600">
+    <!-- Pill 1: Standard C1 -->
+    <rect x="-330" y="-12" width="130" height="24" rx="4" fill="#13080e" stroke="#800020" stroke-width="1" />
+    <text x="-265" y="4" fill="#f3f4f6" letter-spacing="1.5">STANDARD C1</text>
+
+    <!-- Pill 2: 7 Canonical Layers -->
+    <rect x="-185" y="-12" width="160" height="24" rx="4" fill="#13080e" stroke="#800020" stroke-width="1" />
+    <text x="-105" y="4" fill="#f3f4f6" letter-spacing="1.5">7 CANONICAL LAYERS</text>
+
+    <!-- Pill 3: SHA-256 Verified -->
+    <rect x="-10" y="-12" width="170" height="24" rx="4" fill="#081418" stroke="#00e5ff" stroke-width="1" />
+    <text x="75" y="4" fill="#00e5ff" letter-spacing="1.5">SHA-256 SELF-SEALED</text>
+
+    <!-- Pill 4: Model Context Protocol -->
+    <rect x="175" y="-12" width="155" height="24" rx="4" fill="#13080e" stroke="#800020" stroke-width="1" />
+    <text x="252" y="4" fill="#f3f4f6" letter-spacing="1.5">FAIL-CLOSED MCP</text>
+  </g>
+
+  <!-- Micro Footer / Attribution -->
+  <text x="600" y="424" 
+        text-anchor="middle" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="9" 
+        fill="#6b7280" 
+        letter-spacing="2">
+    MULTIVERSA LAB · OPEN SPECIFICATION V1.0 · APACHE-2.0
+  </text>
+</svg>
