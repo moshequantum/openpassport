@@ -1,191 +1,354 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient (Obsidian to Deep Burgundy) -->
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#050204" />
-      <stop offset="45%" stop-color="#0f050b" />
-      <stop offset="75%" stop-color="#14060e" />
-      <stop offset="100%" stop-color="#040102" />
+    <!-- Fonts -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap');
+
+      .f-serif { font-family: 'Instrument Serif', Georgia, serif; }
+      .f-sans  { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+      .f-mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+      .glow-spark {
+        animation: pulse 4s ease-in-out infinite;
+      }
+    </style>
+
+    <!-- Grain / Paper Texture Filter -->
+    <filter id="dreamGrain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" result="noise" />
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0" in="noise" result="coloredNoise" />
+      <feComposite operator="in" in2="SourceGraphic" />
+    </filter>
+
+    <!-- Soft Drop Shadows -->
+    <filter id="cardShadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#483a30" flood-opacity="0.18" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#483a30" flood-opacity="0.08" />
+    </filter>
+
+    <filter id="shardShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#483a30" flood-opacity="0.14" />
+    </filter>
+
+    <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="35" />
+    </filter>
+
+    <filter id="sparkGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Canvas Atmosphere Gradients -->
+    <linearGradient id="bgCanvas" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#faf8f5" />
+      <stop offset="50%" stop-color="#fafafa" />
+      <stop offset="100%" stop-color="#f5f2ee" />
     </linearGradient>
 
-    <!-- Burgundy Ambient Glow -->
-    <radialGradient id="burgundyGlow" cx="50%" cy="38%" r="55%">
-      <stop offset="0%" stop-color="#800020" stop-opacity="0.38" />
-      <stop offset="45%" stop-color="#4a0013" stop-opacity="0.14" />
-      <stop offset="100%" stop-color="#050204" stop-opacity="0" />
+    <!-- Card Twilight Window Gradient -->
+    <linearGradient id="twilightSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d4c4fb" />
+      <stop offset="55%" stop-color="#fae2d6" />
+      <stop offset="100%" stop-color="#f7b299" />
+    </linearGradient>
+
+    <!-- Glass Body Gradient -->
+    <linearGradient id="glassBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.82" />
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.52" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.72" />
+    </linearGradient>
+
+    <!-- Glass Shard Gradient -->
+    <linearGradient id="glassShard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.65" />
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.45" />
+    </linearGradient>
+
+    <!-- Cloud Gradients -->
+    <radialGradient id="cloudPurple" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0" />
     </radialGradient>
 
-    <!-- Cyan Cryptographic Precision Glow -->
-    <radialGradient id="cyanSealGlow" cx="50%" cy="42%" r="35%">
-      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.22" />
-      <stop offset="60%" stop-color="#007a87" stop-opacity="0.05" />
-      <stop offset="100%" stop-color="#050204" stop-opacity="0" />
+    <radialGradient id="cloudWhite" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </radialGradient>
 
-    <!-- Metallic Gold Edge Gradient -->
-    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#800020" stop-opacity="0.2" />
-      <stop offset="25%" stop-color="#800020" stop-opacity="0.8" />
-      <stop offset="50%" stop-color="#d4af37" stop-opacity="0.9" />
-      <stop offset="75%" stop-color="#800020" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#800020" stop-opacity="0.2" />
+    <radialGradient id="cloudButter" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fce38a" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#fce38a" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="swingHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="seatShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e1d1a" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#1e1d1a" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Atmosphere Disc Gradients -->
+    <linearGradient id="discPeach" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fad0c0" />
+      <stop offset="100%" stop-color="#e58f73" />
     </linearGradient>
 
-    <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0" />
-      <stop offset="50%" stop-color="#00e5ff" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0" />
+    <linearGradient id="discLav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e5dcfc" />
+      <stop offset="100%" stop-color="#bba7ee" />
     </linearGradient>
 
-    <!-- Drop Shadows -->
-    <filter id="glowDrop" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.8" />
-    </filter>
-    <filter id="sealShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#00e5ff" flood-opacity="0.35" />
-    </filter>
-  </defs>
+    <linearGradient id="discButter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdf0b8" />
+      <stop offset="100%" stop-color="#fce38a" />
+    </linearGradient>
 
-  <!-- Background Layer -->
-  <rect width="1200" height="460" fill="url(#bgGradient)" />
-  <rect width="1200" height="460" fill="url(#burgundyGlow)" />
-  <rect width="1200" height="460" fill="url(#cyanSealGlow)" />
-
-  <!-- Subtle Architectural Precision Grid -->
-  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
-    <line x1="120" y1="0" x2="120" y2="460" />
-    <line x1="360" y1="0" x2="360" y2="460" />
-    <line x1="840" y1="0" x2="840" y2="460" />
-    <line x1="1080" y1="0" x2="1080" y2="460" />
-    <line x1="0" y1="80" x2="1200" y2="80" />
-    <line x1="0" y1="380" x2="1200" y2="380" />
-    <circle cx="600" cy="180" r="160" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="4,8" />
-    <circle cx="600" cy="180" r="120" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,6" />
-  </g>
-
-  <!-- Top / Bottom Frame Accents -->
-  <line x1="60" y1="24" x2="1140" y2="24" stroke="url(#goldAccent)" stroke-width="1.2" />
-  <line x1="60" y1="436" x2="1140" y2="436" stroke="url(#goldAccent)" stroke-width="1.2" />
-
-  <!-- Corner Brackets (Multiversa Industrial Engineering Touch) -->
-  <g stroke="#800020" stroke-width="1.5" fill="none" opacity="0.7">
-    <path d="M40,44 L40,24 L60,24" />
-    <path d="M1160,44 L1160,24 L1140,24" />
-    <path d="M40,416 L40,436 L60,436" />
-    <path d="M1160,416 L1160,436 L1140,436" />
-  </g>
-
-  <!-- Center Diamond Marks -->
-  <polygon points="600,18 605,24 600,30 595,24" fill="#d4af37" />
-  <polygon points="600,430 605,436 600,442 595,436" fill="#d4af37" />
-
-  <!-- ================= LOGO / CRYPTOGRAPHIC SEAL ================= -->
-  <g transform="translate(600, 150)" filter="url(#glowDrop)" text-anchor="middle">
-    <!-- Outer Shield / Vault Geometry -->
-    <path d="M-64,-64 L64,-64 L80,-10 L0,74 L-80,-10 Z" 
-          fill="#0c0409" 
-          stroke="#800020" 
-          stroke-width="2" 
-          opacity="0.95" />
-
-    <!-- Inner Seal with Cyan Accent -->
-    <path d="M-52,-52 L52,-52 L66,-8 L0,58 L-66,-8 Z" 
-          fill="none" 
-          stroke="#00e5ff" 
-          stroke-width="1.5" 
-          stroke-opacity="0.7" 
-          filter="url(#sealShadow)" />
-
-    <!-- Authentic Multiversa Isotype Pillars (Scaled down to fit inside the seal) -->
-    <g transform="translate(-36, -34) scale(0.48)">
-      <path d="M61.1 100.67H36.37L45.66 33.68H70.45L61.1 100.67Z" fill="#d4af37" />
-      <path d="M92.08 100.67H67.29L76.6 33.68H101.37L92.08 100.67Z" fill="#00e5ff" />
-      <path d="M123 100.67H98.22L107.51 33.68H113.48C123.42 33.68 131.07 42.46 129.7 52.31L123 100.67Z" fill="#ffffff" />
-      <path d="M153.32 134.33H38.5C27.36 134.33 16.78 129.51 9.46 121.12C2.14 112.72 -1.16 101.59 0.37 90.55L8.32 33.2C10.94 14.27 27.34 0 46.45 0H127.73C138.87 0 149.45 4.82 156.77 13.22C164.09 21.61 167.39 32.76 165.86 43.8L153.3 134.35H153.32ZM46.45 11.47C33.03 11.47 21.52 21.5 19.67 34.79L11.72 92.14C10.64 99.88 12.97 107.71 18.1 113.6C23.24 119.5 30.67 122.88 38.48 122.88H143.3L154.5 42.21C155.57 34.47 153.25 26.64 148.11 20.75C142.97 14.85 135.54 11.47 127.73 11.47H46.45Z" fill="#ffffff" opacity="0.8" />
+    <!-- Registration Crosshair Symbol -->
+    <g id="xh">
+      <path d="M11 0v22M0 11h22" stroke="#1e1d1a" stroke-opacity="0.32" stroke-width="1" fill="none" />
+      <circle cx="11" cy="11" r="5" stroke="#1e1d1a" stroke-opacity="0.32" stroke-width="1" fill="none" />
     </g>
 
-    <!-- 7 Canonical Layer Orbital Dots (01 Identity ... 07 Evidence) -->
-    <!-- Dot 1: Top Left -->
-    <circle cx="-100" cy="-60" r="3.5" fill="#d4af37" />
-    <text x="-100" y="-70" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">01·ID</text>
+    <!-- Clip Path for Passport Arched Window -->
+    <clipPath id="archWindowClip">
+      <!-- 254px width, 240px height inside card (x: 773, y: 55) -->
+      <path d="M 773,175 A 127,127 0 0,1 1027,175 L 1027,275 A 18,18 0 0,1 1009,293 L 791,293 A 18,18 0 0,1 773,275 Z" />
+    </clipPath>
 
-    <!-- Dot 2: Top -->
-    <circle cx="-50" cy="-105" r="3.5" fill="#d4af37" />
-    <text x="-50" y="-115" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">02·DOC</text>
+    <!-- Clip Path for the Entire Arched Passport Card -->
+    <clipPath id="cardOuterClip">
+      <path d="M 760,185 A 140,140 0 0,1 1040,185 L 1040,432 A 32,32 0 0,1 1008,464 L 792,464 A 32,32 0 0,1 760,432 Z" />
+    </clipPath>
+  </defs>
 
-    <!-- Dot 3: Top Right -->
-    <circle cx="50" cy="-105" r="3.5" fill="#d4af37" />
-    <text x="50" y="-115" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">03·VOI</text>
+  <!-- ================= BASE CANVAS ================= -->
+  <rect width="1200" height="500" fill="url(#bgCanvas)" />
 
-    <!-- Dot 4: Far Right -->
-    <circle cx="100" cy="-60" r="3.5" fill="#d4af37" />
-    <text x="100" y="-70" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">04·OFF</text>
+  <!-- ================= AMBIENT LUMINOUS GLOWS ================= -->
+  <!-- Top Left Warm Peach Glow -->
+  <circle cx="180" cy="120" r="320" fill="#fad0c0" opacity="0.45" filter="url(#softBlur)" />
+  <!-- Center Lavender Glow -->
+  <circle cx="620" cy="140" r="340" fill="#d4c4fb" opacity="0.38" filter="url(#softBlur)" />
+  <!-- Bottom Left Butter Glow -->
+  <circle cx="280" cy="460" r="260" fill="#fdf0b8" opacity="0.5" filter="url(#softBlur)" />
+  <!-- Right Lilac/Peach Glow -->
+  <circle cx="980" cy="240" r="360" fill="#f6c6d8" opacity="0.42" filter="url(#softBlur)" />
+  <!-- Citrus Ambient Sparkle -->
+  <circle cx="840" cy="420" r="180" fill="#ebffc0" opacity="0.5" filter="url(#softBlur)" />
 
-    <!-- Dot 5: Mid Right -->
-    <circle cx="115" cy="20" r="3.5" fill="#00e5ff" />
-    <text x="145" y="24" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#00e5ff" letter-spacing="1">05·GOV</text>
+  <!-- ================= BACKGROUND ABSTRACT SHAPES (DREAMCORE) ================= -->
+  <!-- Pastel Disc 1: Peach Sunset behind title -->
+  <circle cx="120" cy="380" r="140" fill="url(#discPeach)" opacity="0.4" />
 
-    <!-- Dot 6: Bottom Right -->
-    <circle cx="70" cy="85" r="3.5" fill="#00e5ff" />
-    <text x="70" y="102" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">06·STATE</text>
+  <!-- Pastel Disc 2: Warm Butter top center -->
+  <circle cx="560" cy="40" r="110" fill="url(#discButter)" opacity="0.45" />
 
-    <!-- Dot 7: Bottom Left -->
-    <circle cx="-70" cy="85" r="3.5" fill="#00e5ff" />
-    <text x="-70" y="102" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#9ca3af" letter-spacing="1">07·EVID</text>
+  <!-- Pastel Disc 3: Soft Lavender right behind card -->
+  <circle cx="1060" cy="260" r="130" fill="url(#discLav)" opacity="0.55" />
+
+  <!-- ================= DELICATE WIREFRAME GLOBE (DREAMCORE CODEX) ================= -->
+  <g transform="translate(1010, 30) rotate(-18)" opacity="0.32">
+    <!-- Outer Meridian Circle -->
+    <circle cx="100" cy="100" r="92" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <!-- Parallels -->
+    <ellipse cx="100" cy="100" rx="92" ry="16" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <ellipse cx="100" cy="64" rx="84" ry="14" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <ellipse cx="100" cy="136" rx="84" ry="14" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <ellipse cx="100" cy="30" rx="59" ry="10" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <ellipse cx="100" cy="170" rx="59" ry="10" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <!-- Meridians -->
+    <ellipse cx="100" cy="100" rx="55" ry="92" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <ellipse cx="100" cy="100" rx="24" ry="92" stroke="#1e1d1a" stroke-width="1" fill="none" />
+    <!-- Orbital Nodes -->
+    <circle cx="100" cy="8" r="2.5" fill="#1e1d1a" opacity="0.7" />
+    <circle cx="192" cy="100" r="2.5" fill="#1e1d1a" opacity="0.7" />
+    <circle cx="8" cy="100" r="2.5" fill="#1e1d1a" opacity="0.7" />
   </g>
 
-  <!-- Subtle Cyan Glow Bar -->
-  <line x1="300" y1="264" x2="900" y2="264" stroke="url(#cyanLine)" stroke-width="1.5" />
-
-  <!-- ================= TYPOGRAPHY ================= -->
-  <!-- Main Title: OPENPASSPORT -->
-  <text x="600" y="312" 
-        text-anchor="middle" 
-        font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif" 
-        font-size="44" 
-        font-weight="800" 
-        letter-spacing="12" 
-        fill="#ffffff">
-    OPENPASSPORT
-  </text>
-
-  <!-- Tagline / Descriptor -->
-  <text x="600" y="344" 
-        text-anchor="middle" 
-        font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif" 
-        font-size="12.5" 
-        font-weight="600" 
-        letter-spacing="5" 
-        fill="#d4af37">
-    DETERMINISTIC CONTEXT &amp; CRYPTOGRAPHIC INTEGRITY ENGINE
-  </text>
-
-  <!-- Technical Spec & Authority Badge Row -->
-  <g transform="translate(600, 392)" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600">
-    <!-- Pill 1: Standard C1 -->
-    <rect x="-330" y="-12" width="130" height="24" rx="4" fill="#13080e" stroke="#800020" stroke-width="1" />
-    <text x="-265" y="4" fill="#f3f4f6" letter-spacing="1.5">STANDARD C1</text>
-
-    <!-- Pill 2: 7 Canonical Layers -->
-    <rect x="-185" y="-12" width="160" height="24" rx="4" fill="#13080e" stroke="#800020" stroke-width="1" />
-    <text x="-105" y="4" fill="#f3f4f6" letter-spacing="1.5">7 CANONICAL LAYERS</text>
-
-    <!-- Pill 3: SHA-256 Verified -->
-    <rect x="-10" y="-12" width="170" height="24" rx="4" fill="#081418" stroke="#00e5ff" stroke-width="1" />
-    <text x="75" y="4" fill="#00e5ff" letter-spacing="1.5">SHA-256 SELF-SEALED</text>
-
-    <!-- Pill 4: Model Context Protocol -->
-    <rect x="175" y="-12" width="155" height="24" rx="4" fill="#13080e" stroke="#800020" stroke-width="1" />
-    <text x="252" y="4" fill="#f3f4f6" letter-spacing="1.5">FAIL-CLOSED MCP</text>
+  <!-- Wireframe Armillary Rings Center Left -->
+  <g transform="translate(420, 260)" opacity="0.18">
+    <circle cx="80" cy="80" r="78" stroke="#1e1d1a" stroke-width="0.9" fill="none" />
+    <ellipse cx="80" cy="80" rx="78" ry="24" stroke="#1e1d1a" stroke-width="0.9" fill="none" />
+    <ellipse cx="80" cy="80" rx="24" ry="78" stroke="#1e1d1a" stroke-width="0.9" fill="none" />
   </g>
 
-  <!-- Micro Footer / Attribution -->
-  <text x="600" y="424" 
-        text-anchor="middle" 
-        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
-        font-size="9" 
-        fill="#6b7280" 
-        letter-spacing="2">
-    MULTIVERSA LAB · OPEN SPECIFICATION V1.0 · APACHE-2.0
+  <!-- Registration Crosshairs -->
+  <use href="#xh" x="80" y="50" />
+  <use href="#xh" x="680" y="80" />
+  <use href="#xh" x="710" y="420" />
+  <use href="#xh" x="1130" y="440" />
+
+  <!-- ================= LEFT EDITORIAL & IDENTITY HERO ================= -->
+  <!-- Eyebrow Pill -->
+  <g transform="translate(80, 56)">
+    <rect width="260" height="28" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="rgba(255,255,255,0.9)" stroke-width="1" />
+    <text x="14" y="18" class="f-sans" font-size="10" font-weight="600" letter-spacing="2" fill="#4a4640">✦ PASAPORTE DE CONTEXTO</text>
+    <text x="218" y="18" class="f-mono" font-size="9.5" font-weight="500" fill="#a78bfa">v1.0.0</text>
+  </g>
+
+  <!-- Main Headline in Authentic Instrument Serif -->
+  <g transform="translate(80, 150)">
+    <text class="f-serif" font-size="64" fill="#1e1d1a" letter-spacing="-1.5" line-height="1">
+      El pasaporte
+    </text>
+    <text y="68" class="f-serif" font-size="64" fill="#1e1d1a" letter-spacing="-1.5">
+      <tspan font-style="italic" fill="#a78bfa">de contexto</tspan> de tu marca.
+    </text>
+  </g>
+
+  <!-- Editorial Subhead -->
+  <text x="82" y="270" class="f-sans" font-size="16" font-weight="400" fill="#4a4640" line-height="1.6">
+    Una sola página determinista y criptográfica que reúne tu marca,
   </text>
+  <text x="82" y="294" class="f-sans" font-size="16" font-weight="400" fill="#4a4640">
+    tu negocio y tu tecnología. Para agentes de IA y humanos.
+  </text>
+
+  <!-- Feature Pills / Badges -->
+  <g transform="translate(80, 335)">
+    <!-- Pill 1: El Columpio -->
+    <g transform="translate(0, 0)">
+      <rect width="180" height="34" rx="17" fill="#ffffff" fill-opacity="0.7" stroke="rgba(255,255,255,0.85)" stroke-width="1" />
+      <circle cx="18" cy="17" r="4.5" fill="#f7b299" />
+      <text x="30" y="22" class="f-sans" font-size="12" font-weight="500" fill="#1e1d1a">El columpio visual</text>
+    </g>
+
+    <!-- Pill 2: Estándar C1 -->
+    <g transform="translate(192, 0)">
+      <rect width="168" height="34" rx="17" fill="#ffffff" fill-opacity="0.7" stroke="rgba(255,255,255,0.85)" stroke-width="1" />
+      <circle cx="18" cy="17" r="4.5" fill="#d4c4fb" />
+      <text x="30" y="22" class="f-sans" font-size="12" font-weight="500" fill="#1e1d1a">Estándar C1 SHA-256</text>
+    </g>
+
+    <!-- Pill 3: Model Context Protocol -->
+    <g transform="translate(372, 0)">
+      <rect width="186" height="34" rx="17" fill="#ffffff" fill-opacity="0.7" stroke="rgba(255,255,255,0.85)" stroke-width="1" />
+      <circle cx="18" cy="17" r="4.5" fill="#ebffc0" stroke="#1e1d1a" stroke-width="0.5" />
+      <text x="30" y="22" class="f-sans" font-size="12" font-weight="500" fill="#1e1d1a">Model Context Protocol</text>
+    </g>
+  </g>
+
+  <!-- Code / Verification Line at Bottom Left -->
+  <g transform="translate(82, 420)">
+    <rect width="470" height="32" rx="16" fill="#ffffff" fill-opacity="0.45" stroke="rgba(255,255,255,0.6)" stroke-width="1" />
+    <text x="18" y="21" class="f-mono" font-size="10.5" fill="#4a4640" letter-spacing="1.2">
+      P&lt;MVS&lt;&lt;OPENPASSPORT&lt;&lt;GO+TS&lt;&lt;0001&lt;BRD&lt;BUS&lt;TCH&lt;&lt;2026
+    </text>
+  </g>
+
+  <!-- ================= RIGHT HERO: PASAPORTE DREAMCORE CON EL COLUMPIO ================= -->
+  <!-- Glass Shard Floating behind Passport on the Right -->
+  <rect x="1035" y="250" width="84" height="150" rx="24" fill="url(#glassShard)" stroke="rgba(255,255,255,0.75)" stroke-width="1" transform="rotate(16 1077 325)" filter="url(#shardShadow)" />
+
+  <!-- THE ARCHED PASSPORT CARD CONTAINER -->
+  <g filter="url(#cardShadow)">
+    <!-- Base Glass Card Body -->
+    <path d="M 760,185 A 140,140 0 0,1 1040,185 L 1040,432 A 32,32 0 0,1 1008,464 L 792,464 A 32,32 0 0,1 760,432 Z"
+          fill="url(#glassBody)" stroke="rgba(255,255,255,0.92)" stroke-width="1.2" />
+
+    <!-- Inset Glass Highlight Line -->
+    <path d="M 762,185 A 138,138 0 0,1 1038,185" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.8" />
+
+    <!-- ================= THE TWILIGHT WINDOW (EL COLUMPIO) ================= -->
+    <g clip-path="url(#archWindowClip)">
+      <!-- Twilight Sky Gradient Background -->
+      <rect x="773" y="48" width="254" height="246" fill="url(#twilightSky)" />
+
+      <!-- Floating Dream Clouds -->
+      <!-- Cloud 1: Deep Lilac / Purple Cloud -->
+      <ellipse cx="810" cy="120" rx="110" ry="55" fill="url(#cloudPurple)" />
+      <!-- Cloud 2: White Ethereal Cloud Right -->
+      <ellipse cx="980" cy="145" rx="90" ry="50" fill="url(#cloudWhite)" />
+      <!-- Cloud 3: Warm Butter Cloud Bottom Left -->
+      <ellipse cx="780" cy="245" rx="100" ry="50" fill="url(#cloudButter)" />
+      <!-- Cloud 4: Soft High White Cloud Top Right -->
+      <ellipse cx="940" cy="90" rx="75" ry="40" fill="url(#cloudWhite)" />
+
+      <!-- Citrus 4-Point Sparkle Glint -->
+      <g transform="translate(828, 122)" filter="url(#sparkGlow)">
+        <!-- Halo Circle -->
+        <circle cx="0" cy="0" r="14" fill="#ebffc0" opacity="0.6" />
+        <!-- 4-point Diamond Star -->
+        <polygon points="0,-10 2.5,-2.5 10,0 2.5,2.5 0,10 -2.5,2.5 -10,0 -2.5,-2.5" fill="#ebffc0" />
+      </g>
+
+      <!-- Top Suspension Halo -->
+      <ellipse cx="900" cy="62" rx="60" ry="14" fill="url(#swingHalo)" />
+
+      <!-- ================= EL COLUMPIO (THE SWING) ================= -->
+      <!-- Swing Pivot Points at Top -->
+      <circle cx="878" cy="64" r="2" fill="#1e1d1a" opacity="0.45" />
+      <circle cx="922" cy="64" r="2" fill="#1e1d1a" opacity="0.45" />
+
+      <!-- Suspension Cords -->
+      <line x1="878" y1="64" x2="878" y2="204" stroke="#1e1d1a" stroke-opacity="0.38" stroke-width="1.1" stroke-linecap="round" />
+      <line x1="922" y1="64" x2="922" y2="204" stroke="#1e1d1a" stroke-opacity="0.38" stroke-width="1.1" stroke-linecap="round" />
+
+      <!-- Swing Ground / Air Shadow -->
+      <ellipse cx="900" cy="214" rx="32" ry="6" fill="url(#seatShadow)" />
+
+      <!-- Minimalist Suspended Wooden Seat -->
+      <rect x="872" y="202" width="56" height="8" rx="2.5" fill="#fafafa" stroke="rgba(255,255,255,0.85)" stroke-width="0.8" />
+    </g>
+
+    <!-- 1px Crisp Edge for the Twilight Window -->
+    <path d="M 773,175 A 127,127 0 0,1 1027,175 L 1027,275 A 18,18 0 0,1 1009,293 L 791,293 A 18,18 0 0,1 773,275 Z"
+          fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1" />
+
+    <!-- ================= PASSPORT CARD METADATA ================= -->
+    <g transform="translate(900, 318)" text-anchor="middle">
+      <!-- Passport Number -->
+      <text y="0" class="f-sans" font-size="8.5" font-weight="500" letter-spacing="2.2" fill="#4a4640">PASAPORTE · Nº 001</text>
+
+      <!-- Brand Title in Editorial Serif -->
+      <text y="28" class="f-serif" font-size="28" fill="#1e1d1a" letter-spacing="-0.5">Multiversa</text>
+
+      <!-- Subtitle -->
+      <text y="44" class="f-sans" font-size="9.5" font-weight="400" fill="#4a4640">Contexto compartido, siempre al día</text>
+
+      <!-- Three Iconic Indicator Dots -->
+      <circle cx="-16" cy="58" r="4" fill="#f7b299" opacity="0.9" />
+      <circle cx="0"   cy="58" r="4" fill="#d4c4fb" opacity="0.9" />
+      <circle cx="16"  cy="58" r="4" fill="#fce38a" opacity="0.9" />
+    </g>
+
+    <!-- MRZ Code Box at Bottom of Passport -->
+    <g transform="translate(775, 396)">
+      <rect width="250" height="48" rx="14" fill="#ffffff" fill-opacity="0.45" stroke="rgba(255,255,255,0.7)" stroke-width="0.9" />
+      <text x="14" y="20" class="f-mono" font-size="7.5" fill="#1e1d1a" fill-opacity="0.65" letter-spacing="1.8">
+        P&lt;MVS&lt;&lt;CONTEXTO&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+      </text>
+      <text x="14" y="34" class="f-mono" font-size="7.5" fill="#1e1d1a" fill-opacity="0.65" letter-spacing="1.8">
+        0001&lt;BRD&lt;BUS&lt;TCH&lt;&lt;2026&lt;&lt;&lt;&lt;&lt;&lt;
+      </text>
+    </g>
+  </g>
+
+  <!-- ================= CIRCULAR STAMP SEAL (BRANDING · BUSINESS · TECH · CONTEXTO) ================= -->
+  <g transform="translate(1015, 360) rotate(-14)" opacity="0.75" pointer-events="none">
+    <!-- Outer Seal Ring -->
+    <circle cx="60" cy="60" r="56" stroke="#1e1d1a" stroke-opacity="0.28" stroke-width="1" fill="none" />
+    <!-- Inner Dashed Ring -->
+    <circle cx="60" cy="60" r="36" stroke="#1e1d1a" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="2 4" fill="none" />
+    <!-- Center Target Core -->
+    <circle cx="60" cy="60" r="3" fill="#1e1d1a" fill-opacity="0.4" />
+
+    <!-- Circular Seal Text -->
+    <path id="sealPath" d="M 60,60 m -46,0 a 46,46 0 1,1 92,0 a 46,46 0 1,1 -92,0" fill="none" />
+    <text font-family="'Plus Jakarta Sans', sans-serif" font-size="7.8" font-weight="500" letter-spacing="1.8" fill="#1e1d1a" fill-opacity="0.65">
+      <textPath href="#sealPath">BRANDING · BUSINESS · TECH · CONTEXTO · </textPath>
+    </text>
+  </g>
+
+  <!-- ================= SUBTLE NOISE OVERLAY ================= -->
+  <rect width="1200" height="500" fill="#000000" filter="url(#dreamGrain)" opacity="0.2" pointer-events="none" />
 </svg>
