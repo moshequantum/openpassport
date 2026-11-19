@@ -48,11 +48,19 @@ jobs:
             process.exit(1);
           }
 
+          const root = path.resolve(".");
+          const realRoot = fs.realpathSync(root);
           let errors = 0;
           for (const f of manifest.files) {
             if (f.path === "manifest.json") continue;
-            const fullPath = path.resolve(f.path);
-            if (!fullPath.startsWith(process.cwd())) {
+            if (typeof f.path !== "string" || f.path.length === 0 || path.isAbsolute(f.path)) {
+              console.error("❌ Path traversal security violation in " + f.path);
+              errors++;
+              continue;
+            }
+            const fullPath = path.resolve(root, f.path);
+            const rel = path.relative(root, fullPath);
+            if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
               console.error("❌ Path traversal security violation in " + f.path);
               errors++;
               continue;
@@ -62,8 +70,18 @@ jobs:
               errors++;
               continue;
             }
-            const buf = fs.readFileSync(fullPath);
-            if (buf.includes(0x0d)) {
+            const realTarget = fs.realpathSync(fullPath);
+            const realRel = path.relative(realRoot, realTarget);
+            if (realRel === "" || realRel.startsWith("..") || path.isAbsolute(realRel)) {
+              console.error("❌ Path traversal security violation (symlink) in " + f.path);
+              errors++;
+              continue;
+            }
+            const buf = fs.readFileSync(realTarget);
+            const ext = path.extname(f.path).toLowerCase();
+            const base = path.basename(f.path);
+            const isText = [".md", ".json", ".txt", ".yml", ".yaml", ".svg", ".csv", ".ts", ".js"].includes(ext) || base === ".gitattributes" || base === "LICENSE";
+            if (isText && buf.includes(0x0d)) {
               console.error("❌ CRLF detected in " + f.path + " (violates pure LF contract)");
               errors++;
             }

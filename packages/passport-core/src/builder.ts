@@ -134,7 +134,7 @@ export function buildPassport(
     name: options.name,
     packageVersion: options.packageVersion || "1.0.0",
     originator: options.originator,
-    technicalAuthority: options.technicalAuthority || "Founding AI Product Engineer / Design Engineer",
+    technicalAuthority: options.technicalAuthority || "Founding AI Product Engineer & Design Engineer · Technical Product Strategist",
     language: options.language || "es",
     asOf,
     updatedAt: asOf,

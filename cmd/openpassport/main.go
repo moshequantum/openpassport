@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -41,6 +42,9 @@ func main() {
 	case "init", "lint", "build", "verify", "export":
 		handlePassport(os.Args[1:])
 
+	case "update":
+		handleUpdate(os.Args[2:])
+
 	case "help", "--help", "-h":
 		printUsage()
 		os.Exit(0)
@@ -64,6 +68,7 @@ Comandos disponibles:
   build [dir]      Compila, calcula SHA-256, sella manifestSelfHash y emite receipt
   verify [dir]     Verificación criptográfica read-only de integridad
   export [dir]     Empaqueta un perfil de seguridad (.tar.gz) determinista
+  update           Verifica nuevas versiones y manifiestos criptográficos SHA256SUMS
   version          Muestra la versión de openpassport CLI
 
 Códigos de salida:
@@ -254,4 +259,45 @@ func handlePassport(args []string) {
 
 func isFlag(s string) bool {
 	return len(s) > 0 && s[0] == '-'
+}
+
+func handleUpdate(args []string) {
+	var filteredArgs []string
+	for _, a := range args {
+		if a == "--no-emoji" {
+			noEmoji = true
+		} else {
+			filteredArgs = append(filteredArgs, a)
+		}
+	}
+
+	fs := flag.NewFlagSet("update", flag.ContinueOnError)
+	checkOnly := fs.Bool("check", false, "Solo verifica si existe una actualización firmada con SHA256SUMS")
+	jsonOut := fs.Bool("json", false, "Salida en formato JSON estructurado")
+	if err := fs.Parse(filteredArgs); err != nil {
+		os.Exit(2)
+	}
+	_ = checkOnly
+
+	apiURL := os.Getenv("OPENPASSPORT_RELEASES_URL")
+	rep, err := passport.CheckUpdate(context.Background(), Version, apiURL)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", formatMsg("❌", fmt.Sprintf("Error verificando actualizaciones: %v", err)))
+		os.Exit(1)
+	}
+
+	if *jsonOut {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		_ = enc.Encode(rep)
+		return
+	}
+
+	if rep.UpdateNeeded {
+		fmt.Println(formatMsg("🔄", fmt.Sprintf("Nueva versión disponible: %s (actual: %s)", rep.LatestVersion, rep.CurrentVersion)))
+		fmt.Printf("  • Verificación SHA256SUMS: %v\n", rep.HasSHA256Sums)
+		fmt.Printf("  • Actualizar con Go:       %s\n", rep.InstallCommand)
+	} else {
+		fmt.Println(formatMsg("✅", fmt.Sprintf("openpassport está actualizado (%s).", rep.LatestVersion)))
+	}
 }

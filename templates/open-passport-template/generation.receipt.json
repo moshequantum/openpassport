@@ -2,20 +2,25 @@
   "schemaVersion": 1,
   "kind": "passport-context-generation-receipt",
   "status": "pass",
-  "generatedAt": "2026-09-30T00:05:23Z",
+  "generatedAt": "2026-11-19T01:18:41Z",
   "asOf": "2026-09-29",
   "passport": {
     "name": "OpenPassport Canonical Template",
     "packageVersion": "1.0.0",
     "originator": "Tu Marca o Entidad",
-    "technicalAuthority": "Founding AI Product Engineer / Design Engineer",
-    "manifestSha256": "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92",
-    "fileCount": 10,
+    "technicalAuthority": "Founding AI Product Engineer & Design Engineer · Technical Product Strategist",
+    "manifestSha256": "b6d13a7447ba0abb914f54d338c92440acf5ab151615b5ef2260049c7b2fe5af",
+    "fileCount": 12,
     "files": [
       {
         "path": "manifest.json",
         "layer": "manifest",
-        "sha256": "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92"
+        "sha256": "b6d13a7447ba0abb914f54d338c92440acf5ab151615b5ef2260049c7b2fe5af"
+      },
+      {
+        "path": ".gitattributes",
+        "layer": "config",
+        "sha256": "ca447fa7e5666ee6ca5063d42255bd7c3099c9efbf3cdb46614dd76a4810d38a"
       },
       {
         "path": "01-IDENTITY.md",
@@ -51,6 +56,11 @@
         "path": "07-EVIDENCE.md",
         "layer": "evidence",
         "sha256": "d53db863986cbb903cbaac3b90ac087e8d6535adda89c43b0c64ee18977aa8dc"
+      },
+      {
+        "path": "LICENSE",
+        "layer": "custom",
+        "sha256": "bf2ea89d10e9defe8a44ebbba05360225722af87f55c8f67e1aefe877d5c42d8"
       },
       {
         "path": "MASTER-PROMPT.md",
