@@ -37,12 +37,12 @@ describe("@multiversa/passport-core", () => {
     const manifestPath = path.join(templateDir, "manifest.json");
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
     const { selfHash } = computeManifestSelfHash(manifest);
-    assert.strictEqual(selfHash, "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92");
+    assert.strictEqual(selfHash, "b6d13a7447ba0abb914f54d338c92440acf5ab151615b5ef2260049c7b2fe5af");
 
     const audit = verifyPassportIntegrity(templateDir);
     assert.strictEqual(audit.valid, true);
     assert.strictEqual(audit.selfHashMatches, true);
-    assert.strictEqual(audit.computedSelfHash, "35a9fea4f93b0da51284c57f9dbd7dab7140dc4ab702176b9f23ca2269519d92");
+    assert.strictEqual(audit.computedSelfHash, "b6d13a7447ba0abb914f54d338c92440acf5ab151615b5ef2260049c7b2fe5af");
   });
 
   it("safeJoin rejects path traversal attacks (B1 TS)", () => {

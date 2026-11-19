@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -48,7 +50,7 @@ func BuildPassport(dir string, opts BuildOptions) (*PassportManifest, error) {
 		}
 	}
 	if techAuthority == "" {
-		techAuthority = "Founding AI Product Engineer / Design Engineer"
+		techAuthority = "Founding AI Product Engineer & Design Engineer · Technical Product Strategist"
 	}
 
 	// Ensure .gitattributes exists
@@ -59,7 +61,7 @@ func BuildPassport(dir string, opts BuildOptions) (*PassportManifest, error) {
 		}
 	}
 
-	fileEntries := make([]PassportFileEntry, 0)
+	var relPaths []string
 
 	err := filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -88,78 +90,56 @@ func BuildPassport(dir string, opts BuildOptions) (*PassportManifest, error) {
 			return nil
 		}
 
-		data, err := os.ReadFile(p)
-		if err != nil {
-			return err
-		}
-
-		ext := strings.ToLower(filepath.Ext(p))
-		if opts.AutoFixCRLF && (ext == ".md" || ext == ".json" || ext == ".txt") && HasCRLF(data) {
-			data = ToLF(data)
-			if err := os.WriteFile(p, data, 0644); err != nil {
-				return fmt.Errorf("autofixing CRLF on %q: %w", p, err)
-			}
-		}
-
-		hash := Sha256Bytes(data)
-		if len(hash) != 64 {
-			return fmt.Errorf("invalid hash generated for %q", rel)
-		}
-
-		layer := "custom"
-		base := filepath.Base(rel)
-		switch {
-		case strings.HasPrefix(base, "01-IDENTITY"):
-			layer = "identity"
-		case strings.HasPrefix(base, "02-DOCTRINE"):
-			layer = "doctrine"
-		case strings.HasPrefix(base, "03-VOICE"):
-			layer = "voice"
-		case strings.HasPrefix(base, "04-OFFER"):
-			layer = "offer"
-		case strings.HasPrefix(base, "05-GOVERNANCE"):
-			layer = "governance"
-		case strings.HasPrefix(base, "06-CURRENT-STATE"):
-			layer = "state"
-		case strings.HasPrefix(base, "07-EVIDENCE"):
-			layer = "evidence"
-		case base == "MASTER-PROMPT.md":
-			layer = "interpreter"
-		case base == "README.md":
-			layer = "guide"
-		case base == ".gitattributes":
-			layer = "config"
-		}
-
-		mediaType := "text/plain"
-		if ext == ".md" {
-			mediaType = "text/markdown"
-		} else if ext == ".json" {
-			mediaType = "application/json"
-		}
-
-		vis := "public"
-		if strings.HasPrefix(rel, "private") {
-			vis = "private"
-		}
-
-		fileEntries = append(fileEntries, PassportFileEntry{
-			Path:       rel,
-			Layer:      layer,
-			MediaType:  mediaType,
-			Sha256:     hash,
-			Visibility: vis,
-		})
+		relPaths = append(relPaths, rel)
 		return nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("walking passport directory: %w", err)
 	}
 
-	// Canonical byte order sort
-	sort.Slice(fileEntries, func(i, j int) bool {
-		return fileEntries[i].Path < fileEntries[j].Path
-	})
+	// Canonical byte order sort before bounded parallel hashing
+	sort.Strings(relPaths)
+
+	fileEntries := make([]PassportFileEntry, len(relPaths))
+	if len(relPaths) > 0 {
+		workerErrors := make([]error, len(relPaths))
+		jobs := make(chan int, len(relPaths))
+		for i := range relPaths {
+			jobs <- i
+		}
+		close(jobs)
+
+		workers := runtime.GOMAXPROCS(0)
+		if workers < 1 {
+			workers = 1
+		}
+		if len(relPaths) < workers {
+			workers = len(relPaths)
+		}
+
+		var wg sync.WaitGroup
+		for w := 0; w < workers; w++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for i := range jobs {
+					entry, err := buildFileEntry(dir, relPaths[i], opts.AutoFixCRLF)
+					if err != nil {
+						workerErrors[i] = err
+						continue
+					}
+					fileEntries[i] = entry
+				}
+			}()
+		}
+		wg.Wait()
+
+		for _, werr := range workerErrors {
+			if werr != nil {
+				return nil, werr
+			}
+		}
+	}
 
 	name := opts.Name
 	if name == "" {
@@ -288,6 +268,79 @@ func BuildPassport(dir string, opts BuildOptions) (*PassportManifest, error) {
 	}
 
 	return &manifest, nil
+}
+
+func buildFileEntry(dir, rel string, autoFixCRLF bool) (PassportFileEntry, error) {
+	p := filepath.Join(dir, filepath.FromSlash(rel))
+	data, err := os.ReadFile(p)
+	if err != nil {
+		return PassportFileEntry{}, err
+	}
+
+	if autoFixCRLF && IsTextFile(rel) && HasCRLF(data) {
+		data = ToLF(data)
+		if err := os.WriteFile(p, data, 0644); err != nil {
+			return PassportFileEntry{}, fmt.Errorf("autofixing CRLF on %q: %w", p, err)
+		}
+	}
+
+	hash := Sha256Bytes(data)
+	if !IsValidHex64(hash) {
+		return PassportFileEntry{}, fmt.Errorf("invalid hash generated for %q", rel)
+	}
+
+	layer := "custom"
+	base := filepath.Base(filepath.FromSlash(rel))
+	switch {
+	case strings.HasPrefix(base, "01-IDENTITY"):
+		layer = "identity"
+	case strings.HasPrefix(base, "02-DOCTRINE"):
+		layer = "doctrine"
+	case strings.HasPrefix(base, "03-VOICE"):
+		layer = "voice"
+	case strings.HasPrefix(base, "04-OFFER"):
+		layer = "offer"
+	case strings.HasPrefix(base, "05-GOVERNANCE"):
+		layer = "governance"
+	case strings.HasPrefix(base, "06-CURRENT-STATE"):
+		layer = "state"
+	case strings.HasPrefix(base, "07-EVIDENCE"):
+		layer = "evidence"
+	case base == "MASTER-PROMPT.md":
+		layer = "interpreter"
+	case base == "README.md":
+		layer = "guide"
+	case base == ".gitattributes":
+		layer = "config"
+	}
+
+	ext := strings.ToLower(filepath.Ext(base))
+	mediaType := "text/plain"
+	switch ext {
+	case ".md":
+		mediaType = "text/markdown"
+	case ".json":
+		mediaType = "application/json"
+	case ".png":
+		mediaType = "image/png"
+	case ".svg":
+		mediaType = "image/svg+xml"
+	case ".pdf":
+		mediaType = "application/pdf"
+	}
+
+	vis := "public"
+	if strings.HasPrefix(rel, "private") {
+		vis = "private"
+	}
+
+	return PassportFileEntry{
+		Path:       rel,
+		Layer:      layer,
+		MediaType:  mediaType,
+		Sha256:     hash,
+		Visibility: vis,
+	}, nil
 }
 
 func extractPaths(files []PassportFileEntry, layers ...string) []string {

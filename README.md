@@ -7,7 +7,7 @@
 **The Deterministic Context & Cryptographic Integrity Engine for AI Agents**
 
 [![Release](https://img.shields.io/github/v/release/moshequantum/openpassport?color=00E5FF&label=Release&style=flat-square)](https://github.com/moshequantum/openpassport/releases)
-[![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.27.1-7C4DFF?style=flat-square&logo=go)](https://go.dev)
+[![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.24-7C4DFF?style=flat-square&logo=go)](https://go.dev)
 [![License](https://img.shields.io/badge/License-Apache--2.0-00E676?style=flat-square)](LICENSE)
 [![Verification](https://img.shields.io/badge/Integrity-SHA--256%20Deterministic-FFD600?style=flat-square)](#cryptographic-integrity-seal)
 [![MCP](https://img.shields.io/badge/MCP-Native%20Server-white?style=flat-square&logo=anthropic)](#model-context-protocol-mcp)
